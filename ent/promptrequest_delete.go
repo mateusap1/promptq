@@ -4,8 +4,8 @@ package ent
 
 import (
 	"context"
-	"promptq/ent/predicate"
-	"promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

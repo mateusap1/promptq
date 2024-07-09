@@ -1,4 +1,4 @@
-module promptq
+module github.com/mateusap1/promptq
 
 go 1.22.5
 

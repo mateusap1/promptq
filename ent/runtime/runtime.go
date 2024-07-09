@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in promptq/ent/runtime.go
+// The schema-stitching logic is generated in github.com/mateusap1/promptq/ent/runtime.go
 
 const (
 	Version = "v0.13.1"                                         // Version of ent codegen.

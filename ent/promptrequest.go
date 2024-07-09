@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"strings"
 
 	"entgo.io/ent"

@@ -5,20 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 
-	"promptq/ent"
+	"github.com/mateusap1/promptq/api"
+	"github.com/mateusap1/promptq/ent"
 
 	_ "github.com/mattn/go-sqlite3"
 )
-
-func getHealth(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": "healthy",
-	})
-}
 
 func MakePromptRequest(ctx context.Context, client *ent.Client, prompt string) (*ent.PromptRequest, error) {
 	u, err := client.PromptRequest.
@@ -50,7 +43,7 @@ func main() {
 	}
 
 	router := gin.Default()
-	router.GET("/health", getHealth)
+	router.GET("/health", api.GetHealth)
 
 	router.Run("localhost:8080")
 }

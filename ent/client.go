@@ -9,9 +9,9 @@ import (
 	"log"
 	"reflect"
 
-	"promptq/ent/migrate"
+	"github.com/mateusap1/promptq/ent/migrate"
 
-	"promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"

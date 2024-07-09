@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"

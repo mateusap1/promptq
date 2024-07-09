@@ -5,7 +5,7 @@ package hook
 import (
 	"context"
 	"fmt"
-	"promptq/ent"
+	"github.com/mateusap1/promptq/ent"
 )
 
 // The PromptRequestFunc type is an adapter to allow the use of ordinary

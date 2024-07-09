@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"promptq/ent/predicate"
-	"promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"sync"
 
 	"entgo.io/ent"

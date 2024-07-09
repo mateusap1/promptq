@@ -3,7 +3,7 @@
 package promptrequest
 
 import (
-	"promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
