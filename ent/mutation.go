@@ -34,6 +34,7 @@ type PromptRequestMutation struct {
 	id            *int
 	identifier    *string
 	prompt        *string
+	state         *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*PromptRequest, error)
@@ -210,6 +211,42 @@ func (m *PromptRequestMutation) ResetPrompt() {
 	m.prompt = nil
 }
 
+// SetState sets the "state" field.
+func (m *PromptRequestMutation) SetState(s string) {
+	m.state = &s
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *PromptRequestMutation) State() (r string, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the PromptRequest entity.
+// If the PromptRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromptRequestMutation) OldState(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *PromptRequestMutation) ResetState() {
+	m.state = nil
+}
+
 // Where appends a list predicates to the PromptRequestMutation builder.
 func (m *PromptRequestMutation) Where(ps ...predicate.PromptRequest) {
 	m.predicates = append(m.predicates, ps...)
@@ -244,12 +281,15 @@ func (m *PromptRequestMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PromptRequestMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.identifier != nil {
 		fields = append(fields, promptrequest.FieldIdentifier)
 	}
 	if m.prompt != nil {
 		fields = append(fields, promptrequest.FieldPrompt)
+	}
+	if m.state != nil {
+		fields = append(fields, promptrequest.FieldState)
 	}
 	return fields
 }
@@ -263,6 +303,8 @@ func (m *PromptRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.Identifier()
 	case promptrequest.FieldPrompt:
 		return m.Prompt()
+	case promptrequest.FieldState:
+		return m.State()
 	}
 	return nil, false
 }
@@ -276,6 +318,8 @@ func (m *PromptRequestMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldIdentifier(ctx)
 	case promptrequest.FieldPrompt:
 		return m.OldPrompt(ctx)
+	case promptrequest.FieldState:
+		return m.OldState(ctx)
 	}
 	return nil, fmt.Errorf("unknown PromptRequest field %s", name)
 }
@@ -298,6 +342,13 @@ func (m *PromptRequestMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPrompt(v)
+		return nil
+	case promptrequest.FieldState:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest field %s", name)
@@ -353,6 +404,9 @@ func (m *PromptRequestMutation) ResetField(name string) error {
 		return nil
 	case promptrequest.FieldPrompt:
 		m.ResetPrompt()
+		return nil
+	case promptrequest.FieldState:
+		m.ResetState()
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest field %s", name)

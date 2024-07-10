@@ -55,6 +55,20 @@ func (pru *PromptRequestUpdate) SetNillablePrompt(s *string) *PromptRequestUpdat
 	return pru
 }
 
+// SetState sets the "state" field.
+func (pru *PromptRequestUpdate) SetState(s string) *PromptRequestUpdate {
+	pru.mutation.SetState(s)
+	return pru
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillableState(s *string) *PromptRequestUpdate {
+	if s != nil {
+		pru.SetState(*s)
+	}
+	return pru
+}
+
 // Mutation returns the PromptRequestMutation object of the builder.
 func (pru *PromptRequestUpdate) Mutation() *PromptRequestMutation {
 	return pru.mutation
@@ -102,6 +116,9 @@ func (pru *PromptRequestUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := pru.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
+	if value, ok := pru.mutation.State(); ok {
+		_spec.SetField(promptrequest.FieldState, field.TypeString, value)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{promptrequest.Label}
@@ -146,6 +163,20 @@ func (pruo *PromptRequestUpdateOne) SetPrompt(s string) *PromptRequestUpdateOne 
 func (pruo *PromptRequestUpdateOne) SetNillablePrompt(s *string) *PromptRequestUpdateOne {
 	if s != nil {
 		pruo.SetPrompt(*s)
+	}
+	return pruo
+}
+
+// SetState sets the "state" field.
+func (pruo *PromptRequestUpdateOne) SetState(s string) *PromptRequestUpdateOne {
+	pruo.mutation.SetState(s)
+	return pruo
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillableState(s *string) *PromptRequestUpdateOne {
+	if s != nil {
+		pruo.SetState(*s)
 	}
 	return pruo
 }
@@ -226,6 +257,9 @@ func (pruo *PromptRequestUpdateOne) sqlSave(ctx context.Context) (_node *PromptR
 	}
 	if value, ok := pruo.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
+	}
+	if value, ok := pruo.mutation.State(); ok {
+		_spec.SetField(promptrequest.FieldState, field.TypeString, value)
 	}
 	_node = &PromptRequest{config: pruo.config}
 	_spec.Assign = _node.assignValues

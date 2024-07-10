@@ -19,9 +19,9 @@ func newUUID() string {
 // Fields of the PromptRequest.
 func (PromptRequest) Fields() []ent.Field {
 	return []ent.Field{
-		// field.String("identifier").DefaultFunc(newUUID).Unique(),
 		field.String("identifier").DefaultFunc(newUUID).Unique(),
 		field.String("prompt"),
+		field.String("state").Default("awaiting"),
 	}
 }
 

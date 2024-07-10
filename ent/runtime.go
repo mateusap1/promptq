@@ -17,4 +17,8 @@ func init() {
 	promptrequestDescIdentifier := promptrequestFields[0].Descriptor()
 	// promptrequest.DefaultIdentifier holds the default value on creation for the identifier field.
 	promptrequest.DefaultIdentifier = promptrequestDescIdentifier.Default.(func() string)
+	// promptrequestDescState is the schema descriptor for state field.
+	promptrequestDescState := promptrequestFields[2].Descriptor()
+	// promptrequest.DefaultState holds the default value on creation for the state field.
+	promptrequest.DefaultState = promptrequestDescState.Default.(string)
 }

@@ -19,7 +19,9 @@ type PromptRequest struct {
 	// Identifier holds the value of the "identifier" field.
 	Identifier string `json:"identifier,omitempty"`
 	// Prompt holds the value of the "prompt" field.
-	Prompt       string `json:"prompt,omitempty"`
+	Prompt string `json:"prompt,omitempty"`
+	// State holds the value of the "state" field.
+	State        string `json:"state,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -30,7 +32,7 @@ func (*PromptRequest) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case promptrequest.FieldID:
 			values[i] = new(sql.NullInt64)
-		case promptrequest.FieldIdentifier, promptrequest.FieldPrompt:
+		case promptrequest.FieldIdentifier, promptrequest.FieldPrompt, promptrequest.FieldState:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -64,6 +66,12 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field prompt", values[i])
 			} else if value.Valid {
 				pr.Prompt = value.String
+			}
+		case promptrequest.FieldState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value.Valid {
+				pr.State = value.String
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -106,6 +114,9 @@ func (pr *PromptRequest) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("prompt=")
 	builder.WriteString(pr.Prompt)
+	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(pr.State)
 	builder.WriteByte(')')
 	return builder.String()
 }

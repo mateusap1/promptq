@@ -62,6 +62,11 @@ func Prompt(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldPrompt, v))
 }
 
+// State applies equality check predicate on the "state" field. It's identical to StateEQ.
+func State(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldState, v))
+}
+
 // IdentifierEQ applies the EQ predicate on the "identifier" field.
 func IdentifierEQ(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldIdentifier, v))
@@ -190,6 +195,71 @@ func PromptEqualFold(v string) predicate.PromptRequest {
 // PromptContainsFold applies the ContainsFold predicate on the "prompt" field.
 func PromptContainsFold(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldContainsFold(FieldPrompt, v))
+}
+
+// StateEQ applies the EQ predicate on the "state" field.
+func StateEQ(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldState, v))
+}
+
+// StateNEQ applies the NEQ predicate on the "state" field.
+func StateNEQ(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldNEQ(FieldState, v))
+}
+
+// StateIn applies the In predicate on the "state" field.
+func StateIn(vs ...string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldIn(FieldState, vs...))
+}
+
+// StateNotIn applies the NotIn predicate on the "state" field.
+func StateNotIn(vs ...string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldNotIn(FieldState, vs...))
+}
+
+// StateGT applies the GT predicate on the "state" field.
+func StateGT(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldGT(FieldState, v))
+}
+
+// StateGTE applies the GTE predicate on the "state" field.
+func StateGTE(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldGTE(FieldState, v))
+}
+
+// StateLT applies the LT predicate on the "state" field.
+func StateLT(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldLT(FieldState, v))
+}
+
+// StateLTE applies the LTE predicate on the "state" field.
+func StateLTE(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldLTE(FieldState, v))
+}
+
+// StateContains applies the Contains predicate on the "state" field.
+func StateContains(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldContains(FieldState, v))
+}
+
+// StateHasPrefix applies the HasPrefix predicate on the "state" field.
+func StateHasPrefix(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldHasPrefix(FieldState, v))
+}
+
+// StateHasSuffix applies the HasSuffix predicate on the "state" field.
+func StateHasSuffix(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldHasSuffix(FieldState, v))
+}
+
+// StateEqualFold applies the EqualFold predicate on the "state" field.
+func StateEqualFold(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEqualFold(FieldState, v))
+}
+
+// StateContainsFold applies the ContainsFold predicate on the "state" field.
+func StateContainsFold(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldContainsFold(FieldState, v))
 }
 
 // And groups predicates with the AND operator between them.

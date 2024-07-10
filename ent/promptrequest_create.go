@@ -39,6 +39,20 @@ func (prc *PromptRequestCreate) SetPrompt(s string) *PromptRequestCreate {
 	return prc
 }
 
+// SetState sets the "state" field.
+func (prc *PromptRequestCreate) SetState(s string) *PromptRequestCreate {
+	prc.mutation.SetState(s)
+	return prc
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableState(s *string) *PromptRequestCreate {
+	if s != nil {
+		prc.SetState(*s)
+	}
+	return prc
+}
+
 // Mutation returns the PromptRequestMutation object of the builder.
 func (prc *PromptRequestCreate) Mutation() *PromptRequestMutation {
 	return prc.mutation
@@ -78,6 +92,10 @@ func (prc *PromptRequestCreate) defaults() {
 		v := promptrequest.DefaultIdentifier()
 		prc.mutation.SetIdentifier(v)
 	}
+	if _, ok := prc.mutation.State(); !ok {
+		v := promptrequest.DefaultState
+		prc.mutation.SetState(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -87,6 +105,9 @@ func (prc *PromptRequestCreate) check() error {
 	}
 	if _, ok := prc.mutation.Prompt(); !ok {
 		return &ValidationError{Name: "prompt", err: errors.New(`ent: missing required field "PromptRequest.prompt"`)}
+	}
+	if _, ok := prc.mutation.State(); !ok {
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "PromptRequest.state"`)}
 	}
 	return nil
 }
@@ -121,6 +142,10 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 	if value, ok := prc.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 		_node.Prompt = value
+	}
+	if value, ok := prc.mutation.State(); ok {
+		_spec.SetField(promptrequest.FieldState, field.TypeString, value)
+		_node.State = value
 	}
 	return _node, _spec
 }
