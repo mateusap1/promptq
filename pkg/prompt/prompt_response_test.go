@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/mateusap1/promptq/ent"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMakePromptResponse(t *testing.T) {
@@ -26,18 +25,32 @@ func TestMakePromptResponse(t *testing.T) {
 	}
 
 	t.Run("Create prompt response", func(t *testing.T) {
-		pr, err := MakePromptResponse(ctx, client, "Response #1")
+		prq, err := client.PromptRequest.
+			Create().
+			SetPrompt("Prompt #1").
+			Save(ctx)
 		if err != nil {
-			t.Fatalf("failed creating prompt response: %v", err)
+			t.Fatalf("failed creating prompt request: %v", err)
 		}
 
-		prCount, err := client.PromptResponse.Query().Count(ctx)
+		prp, err := MakePromptResponse(ctx, client, prq, "Response #1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		prpCount, err := client.PromptResponse.Query().Count(ctx)
 		if err != nil {
 			t.Fatalf("failed counting prompts: %v", err)
 		}
 
-		assert.Equal(t, prCount, 1)
-		assert.Equal(t, pr.Response, "Response #1")
-		assert.Equal(t, pr.IsAnswered, false)
+		prq2, err := prp.QueryPromptRequest().Only(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, prpCount, 1)
+		assert.Equal(t, prp.Response, "Response #1")
+		assert.Equal(t, prq2.ID, prq.ID)
+		assert.Equal(t, prp.IsAnswered, false)
 	})
 }

@@ -4,6 +4,7 @@ package promptresponse
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mateusap1/promptq/ent/predicate"
 )
 
@@ -135,6 +136,29 @@ func IsAnsweredEQ(v bool) predicate.PromptResponse {
 // IsAnsweredNEQ applies the NEQ predicate on the "is_answered" field.
 func IsAnsweredNEQ(v bool) predicate.PromptResponse {
 	return predicate.PromptResponse(sql.FieldNEQ(FieldIsAnswered, v))
+}
+
+// HasPromptRequest applies the HasEdge predicate on the "prompt_request" edge.
+func HasPromptRequest() predicate.PromptResponse {
+	return predicate.PromptResponse(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, PromptRequestTable, PromptRequestColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPromptRequestWith applies the HasEdge predicate on the "prompt_request" edge with a given conditions (other predicates).
+func HasPromptRequestWith(preds ...predicate.PromptRequest) predicate.PromptResponse {
+	return predicate.PromptResponse(func(s *sql.Selector) {
+		step := newPromptRequestStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

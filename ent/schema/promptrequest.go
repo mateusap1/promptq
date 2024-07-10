@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -21,11 +22,13 @@ func (PromptRequest) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("identifier").DefaultFunc(newUUID).Unique(),
 		field.String("prompt"),
-		field.Bool("queued").Default(false),
+		field.Bool("is_queued").Default(false),
 	}
 }
 
 // Edges of the PromptRequest.
 func (PromptRequest) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("prompt_response", PromptResponse.Type).Unique(),
+	}
 }

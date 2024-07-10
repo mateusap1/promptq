@@ -31,16 +31,18 @@ const (
 // PromptRequestMutation represents an operation that mutates the PromptRequest nodes in the graph.
 type PromptRequestMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	identifier    *string
-	prompt        *string
-	queued        *bool
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*PromptRequest, error)
-	predicates    []predicate.PromptRequest
+	op                     Op
+	typ                    string
+	id                     *int
+	identifier             *string
+	prompt                 *string
+	is_queued              *bool
+	clearedFields          map[string]struct{}
+	prompt_response        *int
+	clearedprompt_response bool
+	done                   bool
+	oldValue               func(context.Context) (*PromptRequest, error)
+	predicates             []predicate.PromptRequest
 }
 
 var _ ent.Mutation = (*PromptRequestMutation)(nil)
@@ -213,40 +215,79 @@ func (m *PromptRequestMutation) ResetPrompt() {
 	m.prompt = nil
 }
 
-// SetQueued sets the "queued" field.
-func (m *PromptRequestMutation) SetQueued(b bool) {
-	m.queued = &b
+// SetIsQueued sets the "is_queued" field.
+func (m *PromptRequestMutation) SetIsQueued(b bool) {
+	m.is_queued = &b
 }
 
-// Queued returns the value of the "queued" field in the mutation.
-func (m *PromptRequestMutation) Queued() (r bool, exists bool) {
-	v := m.queued
+// IsQueued returns the value of the "is_queued" field in the mutation.
+func (m *PromptRequestMutation) IsQueued() (r bool, exists bool) {
+	v := m.is_queued
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldQueued returns the old "queued" field's value of the PromptRequest entity.
+// OldIsQueued returns the old "is_queued" field's value of the PromptRequest entity.
 // If the PromptRequest object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PromptRequestMutation) OldQueued(ctx context.Context) (v bool, err error) {
+func (m *PromptRequestMutation) OldIsQueued(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldQueued is only allowed on UpdateOne operations")
+		return v, errors.New("OldIsQueued is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldQueued requires an ID field in the mutation")
+		return v, errors.New("OldIsQueued requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldQueued: %w", err)
+		return v, fmt.Errorf("querying old value for OldIsQueued: %w", err)
 	}
-	return oldValue.Queued, nil
+	return oldValue.IsQueued, nil
 }
 
-// ResetQueued resets all changes to the "queued" field.
-func (m *PromptRequestMutation) ResetQueued() {
-	m.queued = nil
+// ResetIsQueued resets all changes to the "is_queued" field.
+func (m *PromptRequestMutation) ResetIsQueued() {
+	m.is_queued = nil
+}
+
+// SetPromptResponseID sets the "prompt_response" edge to the PromptResponse entity by id.
+func (m *PromptRequestMutation) SetPromptResponseID(id int) {
+	m.prompt_response = &id
+}
+
+// ClearPromptResponse clears the "prompt_response" edge to the PromptResponse entity.
+func (m *PromptRequestMutation) ClearPromptResponse() {
+	m.clearedprompt_response = true
+}
+
+// PromptResponseCleared reports if the "prompt_response" edge to the PromptResponse entity was cleared.
+func (m *PromptRequestMutation) PromptResponseCleared() bool {
+	return m.clearedprompt_response
+}
+
+// PromptResponseID returns the "prompt_response" edge ID in the mutation.
+func (m *PromptRequestMutation) PromptResponseID() (id int, exists bool) {
+	if m.prompt_response != nil {
+		return *m.prompt_response, true
+	}
+	return
+}
+
+// PromptResponseIDs returns the "prompt_response" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PromptResponseID instead. It exists only for internal usage by the builders.
+func (m *PromptRequestMutation) PromptResponseIDs() (ids []int) {
+	if id := m.prompt_response; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPromptResponse resets all changes to the "prompt_response" edge.
+func (m *PromptRequestMutation) ResetPromptResponse() {
+	m.prompt_response = nil
+	m.clearedprompt_response = false
 }
 
 // Where appends a list predicates to the PromptRequestMutation builder.
@@ -290,8 +331,8 @@ func (m *PromptRequestMutation) Fields() []string {
 	if m.prompt != nil {
 		fields = append(fields, promptrequest.FieldPrompt)
 	}
-	if m.queued != nil {
-		fields = append(fields, promptrequest.FieldQueued)
+	if m.is_queued != nil {
+		fields = append(fields, promptrequest.FieldIsQueued)
 	}
 	return fields
 }
@@ -305,8 +346,8 @@ func (m *PromptRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.Identifier()
 	case promptrequest.FieldPrompt:
 		return m.Prompt()
-	case promptrequest.FieldQueued:
-		return m.Queued()
+	case promptrequest.FieldIsQueued:
+		return m.IsQueued()
 	}
 	return nil, false
 }
@@ -320,8 +361,8 @@ func (m *PromptRequestMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldIdentifier(ctx)
 	case promptrequest.FieldPrompt:
 		return m.OldPrompt(ctx)
-	case promptrequest.FieldQueued:
-		return m.OldQueued(ctx)
+	case promptrequest.FieldIsQueued:
+		return m.OldIsQueued(ctx)
 	}
 	return nil, fmt.Errorf("unknown PromptRequest field %s", name)
 }
@@ -345,12 +386,12 @@ func (m *PromptRequestMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPrompt(v)
 		return nil
-	case promptrequest.FieldQueued:
+	case promptrequest.FieldIsQueued:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetQueued(v)
+		m.SetIsQueued(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest field %s", name)
@@ -407,8 +448,8 @@ func (m *PromptRequestMutation) ResetField(name string) error {
 	case promptrequest.FieldPrompt:
 		m.ResetPrompt()
 		return nil
-	case promptrequest.FieldQueued:
-		m.ResetQueued()
+	case promptrequest.FieldIsQueued:
+		m.ResetIsQueued()
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest field %s", name)
@@ -416,19 +457,28 @@ func (m *PromptRequestMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PromptRequestMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.prompt_response != nil {
+		edges = append(edges, promptrequest.EdgePromptResponse)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PromptRequestMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case promptrequest.EdgePromptResponse:
+		if id := m.prompt_response; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PromptRequestMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -440,40 +490,59 @@ func (m *PromptRequestMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PromptRequestMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedprompt_response {
+		edges = append(edges, promptrequest.EdgePromptResponse)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PromptRequestMutation) EdgeCleared(name string) bool {
+	switch name {
+	case promptrequest.EdgePromptResponse:
+		return m.clearedprompt_response
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PromptRequestMutation) ClearEdge(name string) error {
+	switch name {
+	case promptrequest.EdgePromptResponse:
+		m.ClearPromptResponse()
+		return nil
+	}
 	return fmt.Errorf("unknown PromptRequest unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PromptRequestMutation) ResetEdge(name string) error {
+	switch name {
+	case promptrequest.EdgePromptResponse:
+		m.ResetPromptResponse()
+		return nil
+	}
 	return fmt.Errorf("unknown PromptRequest edge %s", name)
 }
 
 // PromptResponseMutation represents an operation that mutates the PromptResponse nodes in the graph.
 type PromptResponseMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	response      *string
-	is_answered   *bool
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*PromptResponse, error)
-	predicates    []predicate.PromptResponse
+	op                    Op
+	typ                   string
+	id                    *int
+	response              *string
+	is_answered           *bool
+	clearedFields         map[string]struct{}
+	prompt_request        *int
+	clearedprompt_request bool
+	done                  bool
+	oldValue              func(context.Context) (*PromptResponse, error)
+	predicates            []predicate.PromptResponse
 }
 
 var _ ent.Mutation = (*PromptResponseMutation)(nil)
@@ -646,6 +715,45 @@ func (m *PromptResponseMutation) ResetIsAnswered() {
 	m.is_answered = nil
 }
 
+// SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by id.
+func (m *PromptResponseMutation) SetPromptRequestID(id int) {
+	m.prompt_request = &id
+}
+
+// ClearPromptRequest clears the "prompt_request" edge to the PromptRequest entity.
+func (m *PromptResponseMutation) ClearPromptRequest() {
+	m.clearedprompt_request = true
+}
+
+// PromptRequestCleared reports if the "prompt_request" edge to the PromptRequest entity was cleared.
+func (m *PromptResponseMutation) PromptRequestCleared() bool {
+	return m.clearedprompt_request
+}
+
+// PromptRequestID returns the "prompt_request" edge ID in the mutation.
+func (m *PromptResponseMutation) PromptRequestID() (id int, exists bool) {
+	if m.prompt_request != nil {
+		return *m.prompt_request, true
+	}
+	return
+}
+
+// PromptRequestIDs returns the "prompt_request" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PromptRequestID instead. It exists only for internal usage by the builders.
+func (m *PromptResponseMutation) PromptRequestIDs() (ids []int) {
+	if id := m.prompt_request; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPromptRequest resets all changes to the "prompt_request" edge.
+func (m *PromptResponseMutation) ResetPromptRequest() {
+	m.prompt_request = nil
+	m.clearedprompt_request = false
+}
+
 // Where appends a list predicates to the PromptResponseMutation builder.
 func (m *PromptResponseMutation) Where(ps ...predicate.PromptResponse) {
 	m.predicates = append(m.predicates, ps...)
@@ -796,19 +904,28 @@ func (m *PromptResponseMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PromptResponseMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.prompt_request != nil {
+		edges = append(edges, promptresponse.EdgePromptRequest)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PromptResponseMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case promptresponse.EdgePromptRequest:
+		if id := m.prompt_request; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PromptResponseMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -820,24 +937,41 @@ func (m *PromptResponseMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PromptResponseMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedprompt_request {
+		edges = append(edges, promptresponse.EdgePromptRequest)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PromptResponseMutation) EdgeCleared(name string) bool {
+	switch name {
+	case promptresponse.EdgePromptRequest:
+		return m.clearedprompt_request
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PromptResponseMutation) ClearEdge(name string) error {
+	switch name {
+	case promptresponse.EdgePromptRequest:
+		m.ClearPromptRequest()
+		return nil
+	}
 	return fmt.Errorf("unknown PromptResponse unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PromptResponseMutation) ResetEdge(name string) error {
+	switch name {
+	case promptresponse.EdgePromptRequest:
+		m.ResetPromptRequest()
+		return nil
+	}
 	return fmt.Errorf("unknown PromptResponse edge %s", name)
 }

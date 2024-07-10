@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
@@ -19,8 +20,32 @@ type PromptResponse struct {
 	// Response holds the value of the "response" field.
 	Response string `json:"response,omitempty"`
 	// IsAnswered holds the value of the "is_answered" field.
-	IsAnswered   bool `json:"is_answered,omitempty"`
-	selectValues sql.SelectValues
+	IsAnswered bool `json:"is_answered,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PromptResponseQuery when eager-loading is set.
+	Edges                          PromptResponseEdges `json:"edges"`
+	prompt_request_prompt_response *int
+	selectValues                   sql.SelectValues
+}
+
+// PromptResponseEdges holds the relations/edges for other nodes in the graph.
+type PromptResponseEdges struct {
+	// PromptRequest holds the value of the prompt_request edge.
+	PromptRequest *PromptRequest `json:"prompt_request,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PromptRequestOrErr returns the PromptRequest value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PromptResponseEdges) PromptRequestOrErr() (*PromptRequest, error) {
+	if e.PromptRequest != nil {
+		return e.PromptRequest, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: promptrequest.Label}
+	}
+	return nil, &NotLoadedError{edge: "prompt_request"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,6 +59,8 @@ func (*PromptResponse) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case promptresponse.FieldResponse:
 			values[i] = new(sql.NullString)
+		case promptresponse.ForeignKeys[0]: // prompt_request_prompt_response
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -67,6 +94,13 @@ func (pr *PromptResponse) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.IsAnswered = value.Bool
 			}
+		case promptresponse.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field prompt_request_prompt_response", value)
+			} else if value.Valid {
+				pr.prompt_request_prompt_response = new(int)
+				*pr.prompt_request_prompt_response = int(value.Int64)
+			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
 		}
@@ -78,6 +112,11 @@ func (pr *PromptResponse) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pr *PromptResponse) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
+}
+
+// QueryPromptRequest queries the "prompt_request" edge of the PromptResponse entity.
+func (pr *PromptResponse) QueryPromptRequest() *PromptRequestQuery {
+	return NewPromptResponseClient(pr.config).QueryPromptRequest(pr)
 }
 
 // Update returns a builder for updating this PromptResponse.

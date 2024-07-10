@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -20,5 +21,10 @@ func (PromptResponse) Fields() []ent.Field {
 
 // Edges of the PromptResponse.
 func (PromptResponse) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("prompt_request", PromptRequest.Type).
+			Ref("prompt_response").
+			Unique().
+			Required(),
+	}
 }

@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
 // PromptRequest is the model entity for the PromptRequest schema.
@@ -20,9 +21,32 @@ type PromptRequest struct {
 	Identifier string `json:"identifier,omitempty"`
 	// Prompt holds the value of the "prompt" field.
 	Prompt string `json:"prompt,omitempty"`
-	// Queued holds the value of the "queued" field.
-	Queued       bool `json:"queued,omitempty"`
+	// IsQueued holds the value of the "is_queued" field.
+	IsQueued bool `json:"is_queued,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PromptRequestQuery when eager-loading is set.
+	Edges        PromptRequestEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// PromptRequestEdges holds the relations/edges for other nodes in the graph.
+type PromptRequestEdges struct {
+	// PromptResponse holds the value of the prompt_response edge.
+	PromptResponse *PromptResponse `json:"prompt_response,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PromptResponseOrErr returns the PromptResponse value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PromptRequestEdges) PromptResponseOrErr() (*PromptResponse, error) {
+	if e.PromptResponse != nil {
+		return e.PromptResponse, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: promptresponse.Label}
+	}
+	return nil, &NotLoadedError{edge: "prompt_response"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -30,7 +54,7 @@ func (*PromptRequest) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case promptrequest.FieldQueued:
+		case promptrequest.FieldIsQueued:
 			values[i] = new(sql.NullBool)
 		case promptrequest.FieldID:
 			values[i] = new(sql.NullInt64)
@@ -69,11 +93,11 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Prompt = value.String
 			}
-		case promptrequest.FieldQueued:
+		case promptrequest.FieldIsQueued:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field queued", values[i])
+				return fmt.Errorf("unexpected type %T for field is_queued", values[i])
 			} else if value.Valid {
-				pr.Queued = value.Bool
+				pr.IsQueued = value.Bool
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -86,6 +110,11 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pr *PromptRequest) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
+}
+
+// QueryPromptResponse queries the "prompt_response" edge of the PromptRequest entity.
+func (pr *PromptRequest) QueryPromptResponse() *PromptResponseQuery {
+	return NewPromptRequestClient(pr.config).QueryPromptResponse(pr)
 }
 
 // Update returns a builder for updating this PromptRequest.
@@ -117,8 +146,8 @@ func (pr *PromptRequest) String() string {
 	builder.WriteString("prompt=")
 	builder.WriteString(pr.Prompt)
 	builder.WriteString(", ")
-	builder.WriteString("queued=")
-	builder.WriteString(fmt.Sprintf("%v", pr.Queued))
+	builder.WriteString("is_queued=")
+	builder.WriteString(fmt.Sprintf("%v", pr.IsQueued))
 	builder.WriteByte(')')
 	return builder.String()
 }

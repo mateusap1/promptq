@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
@@ -314,6 +315,22 @@ func (c *PromptRequestClient) GetX(ctx context.Context, id int) *PromptRequest {
 	return obj
 }
 
+// QueryPromptResponse queries the prompt_response edge of a PromptRequest.
+func (c *PromptRequestClient) QueryPromptResponse(pr *PromptRequest) *PromptResponseQuery {
+	query := (&PromptResponseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promptrequest.Table, promptrequest.FieldID, id),
+			sqlgraph.To(promptresponse.Table, promptresponse.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, promptrequest.PromptResponseTable, promptrequest.PromptResponseColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PromptRequestClient) Hooks() []Hook {
 	return c.hooks.PromptRequest
@@ -445,6 +462,22 @@ func (c *PromptResponseClient) GetX(ctx context.Context, id int) *PromptResponse
 		panic(err)
 	}
 	return obj
+}
+
+// QueryPromptRequest queries the prompt_request edge of a PromptResponse.
+func (c *PromptResponseClient) QueryPromptRequest(pr *PromptResponse) *PromptRequestQuery {
+	query := (&PromptRequestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promptresponse.Table, promptresponse.FieldID, id),
+			sqlgraph.To(promptrequest.Table, promptrequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, promptresponse.PromptRequestTable, promptresponse.PromptRequestColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

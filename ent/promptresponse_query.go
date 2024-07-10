@@ -11,16 +11,19 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
 // PromptResponseQuery is the builder for querying PromptResponse entities.
 type PromptResponseQuery struct {
 	config
-	ctx        *QueryContext
-	order      []promptresponse.OrderOption
-	inters     []Interceptor
-	predicates []predicate.PromptResponse
+	ctx               *QueryContext
+	order             []promptresponse.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.PromptResponse
+	withPromptRequest *PromptRequestQuery
+	withFKs           bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +58,28 @@ func (prq *PromptResponseQuery) Unique(unique bool) *PromptResponseQuery {
 func (prq *PromptResponseQuery) Order(o ...promptresponse.OrderOption) *PromptResponseQuery {
 	prq.order = append(prq.order, o...)
 	return prq
+}
+
+// QueryPromptRequest chains the current query on the "prompt_request" edge.
+func (prq *PromptResponseQuery) QueryPromptRequest() *PromptRequestQuery {
+	query := (&PromptRequestClient{config: prq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := prq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := prq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promptresponse.Table, promptresponse.FieldID, selector),
+			sqlgraph.To(promptrequest.Table, promptrequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, promptresponse.PromptRequestTable, promptresponse.PromptRequestColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first PromptResponse entity from the query.
@@ -244,15 +269,27 @@ func (prq *PromptResponseQuery) Clone() *PromptResponseQuery {
 		return nil
 	}
 	return &PromptResponseQuery{
-		config:     prq.config,
-		ctx:        prq.ctx.Clone(),
-		order:      append([]promptresponse.OrderOption{}, prq.order...),
-		inters:     append([]Interceptor{}, prq.inters...),
-		predicates: append([]predicate.PromptResponse{}, prq.predicates...),
+		config:            prq.config,
+		ctx:               prq.ctx.Clone(),
+		order:             append([]promptresponse.OrderOption{}, prq.order...),
+		inters:            append([]Interceptor{}, prq.inters...),
+		predicates:        append([]predicate.PromptResponse{}, prq.predicates...),
+		withPromptRequest: prq.withPromptRequest.Clone(),
 		// clone intermediate query.
 		sql:  prq.sql.Clone(),
 		path: prq.path,
 	}
+}
+
+// WithPromptRequest tells the query-builder to eager-load the nodes that are connected to
+// the "prompt_request" edge. The optional arguments are used to configure the query builder of the edge.
+func (prq *PromptResponseQuery) WithPromptRequest(opts ...func(*PromptRequestQuery)) *PromptResponseQuery {
+	query := (&PromptRequestClient{config: prq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	prq.withPromptRequest = query
+	return prq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -331,15 +368,26 @@ func (prq *PromptResponseQuery) prepareQuery(ctx context.Context) error {
 
 func (prq *PromptResponseQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*PromptResponse, error) {
 	var (
-		nodes = []*PromptResponse{}
-		_spec = prq.querySpec()
+		nodes       = []*PromptResponse{}
+		withFKs     = prq.withFKs
+		_spec       = prq.querySpec()
+		loadedTypes = [1]bool{
+			prq.withPromptRequest != nil,
+		}
 	)
+	if prq.withPromptRequest != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, promptresponse.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*PromptResponse).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &PromptResponse{config: prq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +399,46 @@ func (prq *PromptResponseQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := prq.withPromptRequest; query != nil {
+		if err := prq.loadPromptRequest(ctx, query, nodes, nil,
+			func(n *PromptResponse, e *PromptRequest) { n.Edges.PromptRequest = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (prq *PromptResponseQuery) loadPromptRequest(ctx context.Context, query *PromptRequestQuery, nodes []*PromptResponse, init func(*PromptResponse), assign func(*PromptResponse, *PromptRequest)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*PromptResponse)
+	for i := range nodes {
+		if nodes[i].prompt_request_prompt_response == nil {
+			continue
+		}
+		fk := *nodes[i].prompt_request_prompt_response
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(promptrequest.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "prompt_request_prompt_response" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (prq *PromptResponseQuery) sqlCount(ctx context.Context) (int, error) {

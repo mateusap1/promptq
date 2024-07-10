@@ -8,17 +8,18 @@ import (
 	"github.com/mateusap1/promptq/ent"
 )
 
-func MakePromptResponse(ctx context.Context, client *ent.Client, response string) (*ent.PromptResponse, error) {
-	u, err := client.PromptResponse.
+func MakePromptResponse(ctx context.Context, client *ent.Client, prompt_request *ent.PromptRequest, response string) (*ent.PromptResponse, error) {
+	pr, err := client.PromptResponse.
 		Create().
 		SetResponse(response).
+		SetPromptRequest(prompt_request).
 		Save(ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed creating prompt request: %w", err)
+		return nil, fmt.Errorf("failed creating prompt response: %w", err)
 	}
 
-	log.Println("prompt request was created: ", u)
+	log.Println("prompt response was created: ", pr)
 
-	return u, nil
+	return pr, nil
 }

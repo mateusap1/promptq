@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
@@ -37,6 +38,17 @@ func (prc *PromptResponseCreate) SetNillableIsAnswered(b *bool) *PromptResponseC
 		prc.SetIsAnswered(*b)
 	}
 	return prc
+}
+
+// SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by ID.
+func (prc *PromptResponseCreate) SetPromptRequestID(id int) *PromptResponseCreate {
+	prc.mutation.SetPromptRequestID(id)
+	return prc
+}
+
+// SetPromptRequest sets the "prompt_request" edge to the PromptRequest entity.
+func (prc *PromptResponseCreate) SetPromptRequest(p *PromptRequest) *PromptResponseCreate {
+	return prc.SetPromptRequestID(p.ID)
 }
 
 // Mutation returns the PromptResponseMutation object of the builder.
@@ -88,6 +100,9 @@ func (prc *PromptResponseCreate) check() error {
 	if _, ok := prc.mutation.IsAnswered(); !ok {
 		return &ValidationError{Name: "is_answered", err: errors.New(`ent: missing required field "PromptResponse.is_answered"`)}
 	}
+	if _, ok := prc.mutation.PromptRequestID(); !ok {
+		return &ValidationError{Name: "prompt_request", err: errors.New(`ent: missing required edge "PromptResponse.prompt_request"`)}
+	}
 	return nil
 }
 
@@ -121,6 +136,23 @@ func (prc *PromptResponseCreate) createSpec() (*PromptResponse, *sqlgraph.Create
 	if value, ok := prc.mutation.IsAnswered(); ok {
 		_spec.SetField(promptresponse.FieldIsAnswered, field.TypeBool, value)
 		_node.IsAnswered = value
+	}
+	if nodes := prc.mutation.PromptRequestIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   promptresponse.PromptRequestTable,
+			Columns: []string{promptresponse.PromptRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.prompt_request_prompt_response = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -18,10 +18,10 @@ func init() {
 	promptrequestDescIdentifier := promptrequestFields[0].Descriptor()
 	// promptrequest.DefaultIdentifier holds the default value on creation for the identifier field.
 	promptrequest.DefaultIdentifier = promptrequestDescIdentifier.Default.(func() string)
-	// promptrequestDescQueued is the schema descriptor for queued field.
-	promptrequestDescQueued := promptrequestFields[2].Descriptor()
-	// promptrequest.DefaultQueued holds the default value on creation for the queued field.
-	promptrequest.DefaultQueued = promptrequestDescQueued.Default.(bool)
+	// promptrequestDescIsQueued is the schema descriptor for is_queued field.
+	promptrequestDescIsQueued := promptrequestFields[2].Descriptor()
+	// promptrequest.DefaultIsQueued holds the default value on creation for the is_queued field.
+	promptrequest.DefaultIsQueued = promptrequestDescIsQueued.Default.(bool)
 	promptresponseFields := schema.PromptResponse{}.Fields()
 	_ = promptresponseFields
 	// promptresponseDescIsAnswered is the schema descriptor for is_answered field.

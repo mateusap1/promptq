@@ -38,7 +38,7 @@ func TestMakePromptRequest(t *testing.T) {
 
 		assert.Equal(t, prCount, 1)
 		assert.Equal(t, pr.Prompt, "Prompt #1")
-		assert.Equal(t, pr.Queued, false)
+		assert.Equal(t, pr.IsQueued, false)
 	})
 }
 
@@ -72,6 +72,6 @@ func TestQueuePromptRequest(t *testing.T) {
 			t.Fatalf("failed queueing prompt: %v", err)
 		}
 
-		assert.Equal(t, pr.Queued, true)
+		assert.Equal(t, pr.IsQueued, true)
 	})
 }

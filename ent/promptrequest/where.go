@@ -4,6 +4,7 @@ package promptrequest
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mateusap1/promptq/ent/predicate"
 )
 
@@ -62,9 +63,9 @@ func Prompt(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldPrompt, v))
 }
 
-// Queued applies equality check predicate on the "queued" field. It's identical to QueuedEQ.
-func Queued(v bool) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldEQ(FieldQueued, v))
+// IsQueued applies equality check predicate on the "is_queued" field. It's identical to IsQueuedEQ.
+func IsQueued(v bool) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldIsQueued, v))
 }
 
 // IdentifierEQ applies the EQ predicate on the "identifier" field.
@@ -197,14 +198,37 @@ func PromptContainsFold(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldContainsFold(FieldPrompt, v))
 }
 
-// QueuedEQ applies the EQ predicate on the "queued" field.
-func QueuedEQ(v bool) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldEQ(FieldQueued, v))
+// IsQueuedEQ applies the EQ predicate on the "is_queued" field.
+func IsQueuedEQ(v bool) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldIsQueued, v))
 }
 
-// QueuedNEQ applies the NEQ predicate on the "queued" field.
-func QueuedNEQ(v bool) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldNEQ(FieldQueued, v))
+// IsQueuedNEQ applies the NEQ predicate on the "is_queued" field.
+func IsQueuedNEQ(v bool) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldNEQ(FieldIsQueued, v))
+}
+
+// HasPromptResponse applies the HasEdge predicate on the "prompt_response" edge.
+func HasPromptResponse() predicate.PromptRequest {
+	return predicate.PromptRequest(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, PromptResponseTable, PromptResponseColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPromptResponseWith applies the HasEdge predicate on the "prompt_response" edge with a given conditions (other predicates).
+func HasPromptResponseWith(preds ...predicate.PromptResponse) predicate.PromptRequest {
+	return predicate.PromptRequest(func(s *sql.Selector) {
+		step := newPromptResponseStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

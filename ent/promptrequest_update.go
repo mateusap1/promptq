@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
 // PromptRequestUpdate is the builder for updating PromptRequest entities.
@@ -55,23 +56,48 @@ func (pru *PromptRequestUpdate) SetNillablePrompt(s *string) *PromptRequestUpdat
 	return pru
 }
 
-// SetQueued sets the "queued" field.
-func (pru *PromptRequestUpdate) SetQueued(b bool) *PromptRequestUpdate {
-	pru.mutation.SetQueued(b)
+// SetIsQueued sets the "is_queued" field.
+func (pru *PromptRequestUpdate) SetIsQueued(b bool) *PromptRequestUpdate {
+	pru.mutation.SetIsQueued(b)
 	return pru
 }
 
-// SetNillableQueued sets the "queued" field if the given value is not nil.
-func (pru *PromptRequestUpdate) SetNillableQueued(b *bool) *PromptRequestUpdate {
+// SetNillableIsQueued sets the "is_queued" field if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillableIsQueued(b *bool) *PromptRequestUpdate {
 	if b != nil {
-		pru.SetQueued(*b)
+		pru.SetIsQueued(*b)
 	}
 	return pru
+}
+
+// SetPromptResponseID sets the "prompt_response" edge to the PromptResponse entity by ID.
+func (pru *PromptRequestUpdate) SetPromptResponseID(id int) *PromptRequestUpdate {
+	pru.mutation.SetPromptResponseID(id)
+	return pru
+}
+
+// SetNillablePromptResponseID sets the "prompt_response" edge to the PromptResponse entity by ID if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillablePromptResponseID(id *int) *PromptRequestUpdate {
+	if id != nil {
+		pru = pru.SetPromptResponseID(*id)
+	}
+	return pru
+}
+
+// SetPromptResponse sets the "prompt_response" edge to the PromptResponse entity.
+func (pru *PromptRequestUpdate) SetPromptResponse(p *PromptResponse) *PromptRequestUpdate {
+	return pru.SetPromptResponseID(p.ID)
 }
 
 // Mutation returns the PromptRequestMutation object of the builder.
 func (pru *PromptRequestUpdate) Mutation() *PromptRequestMutation {
 	return pru.mutation
+}
+
+// ClearPromptResponse clears the "prompt_response" edge to the PromptResponse entity.
+func (pru *PromptRequestUpdate) ClearPromptResponse() *PromptRequestUpdate {
+	pru.mutation.ClearPromptResponse()
+	return pru
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -116,8 +142,37 @@ func (pru *PromptRequestUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := pru.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
-	if value, ok := pru.mutation.Queued(); ok {
-		_spec.SetField(promptrequest.FieldQueued, field.TypeBool, value)
+	if value, ok := pru.mutation.IsQueued(); ok {
+		_spec.SetField(promptrequest.FieldIsQueued, field.TypeBool, value)
+	}
+	if pru.mutation.PromptResponseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   promptrequest.PromptResponseTable,
+			Columns: []string{promptrequest.PromptResponseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.PromptResponseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   promptrequest.PromptResponseTable,
+			Columns: []string{promptrequest.PromptResponseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -167,23 +222,48 @@ func (pruo *PromptRequestUpdateOne) SetNillablePrompt(s *string) *PromptRequestU
 	return pruo
 }
 
-// SetQueued sets the "queued" field.
-func (pruo *PromptRequestUpdateOne) SetQueued(b bool) *PromptRequestUpdateOne {
-	pruo.mutation.SetQueued(b)
+// SetIsQueued sets the "is_queued" field.
+func (pruo *PromptRequestUpdateOne) SetIsQueued(b bool) *PromptRequestUpdateOne {
+	pruo.mutation.SetIsQueued(b)
 	return pruo
 }
 
-// SetNillableQueued sets the "queued" field if the given value is not nil.
-func (pruo *PromptRequestUpdateOne) SetNillableQueued(b *bool) *PromptRequestUpdateOne {
+// SetNillableIsQueued sets the "is_queued" field if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillableIsQueued(b *bool) *PromptRequestUpdateOne {
 	if b != nil {
-		pruo.SetQueued(*b)
+		pruo.SetIsQueued(*b)
 	}
 	return pruo
+}
+
+// SetPromptResponseID sets the "prompt_response" edge to the PromptResponse entity by ID.
+func (pruo *PromptRequestUpdateOne) SetPromptResponseID(id int) *PromptRequestUpdateOne {
+	pruo.mutation.SetPromptResponseID(id)
+	return pruo
+}
+
+// SetNillablePromptResponseID sets the "prompt_response" edge to the PromptResponse entity by ID if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillablePromptResponseID(id *int) *PromptRequestUpdateOne {
+	if id != nil {
+		pruo = pruo.SetPromptResponseID(*id)
+	}
+	return pruo
+}
+
+// SetPromptResponse sets the "prompt_response" edge to the PromptResponse entity.
+func (pruo *PromptRequestUpdateOne) SetPromptResponse(p *PromptResponse) *PromptRequestUpdateOne {
+	return pruo.SetPromptResponseID(p.ID)
 }
 
 // Mutation returns the PromptRequestMutation object of the builder.
 func (pruo *PromptRequestUpdateOne) Mutation() *PromptRequestMutation {
 	return pruo.mutation
+}
+
+// ClearPromptResponse clears the "prompt_response" edge to the PromptResponse entity.
+func (pruo *PromptRequestUpdateOne) ClearPromptResponse() *PromptRequestUpdateOne {
+	pruo.mutation.ClearPromptResponse()
+	return pruo
 }
 
 // Where appends a list predicates to the PromptRequestUpdate builder.
@@ -258,8 +338,37 @@ func (pruo *PromptRequestUpdateOne) sqlSave(ctx context.Context) (_node *PromptR
 	if value, ok := pruo.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
-	if value, ok := pruo.mutation.Queued(); ok {
-		_spec.SetField(promptrequest.FieldQueued, field.TypeBool, value)
+	if value, ok := pruo.mutation.IsQueued(); ok {
+		_spec.SetField(promptrequest.FieldIsQueued, field.TypeBool, value)
+	}
+	if pruo.mutation.PromptResponseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   promptrequest.PromptResponseTable,
+			Columns: []string{promptrequest.PromptResponseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.PromptResponseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   promptrequest.PromptResponseTable,
+			Columns: []string{promptrequest.PromptResponseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &PromptRequest{config: pruo.config}
 	_spec.Assign = _node.assignValues

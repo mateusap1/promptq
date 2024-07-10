@@ -4,6 +4,7 @@ package promptresponse
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -15,8 +16,17 @@ const (
 	FieldResponse = "response"
 	// FieldIsAnswered holds the string denoting the is_answered field in the database.
 	FieldIsAnswered = "is_answered"
+	// EdgePromptRequest holds the string denoting the prompt_request edge name in mutations.
+	EdgePromptRequest = "prompt_request"
 	// Table holds the table name of the promptresponse in the database.
 	Table = "prompt_responses"
+	// PromptRequestTable is the table that holds the prompt_request relation/edge.
+	PromptRequestTable = "prompt_responses"
+	// PromptRequestInverseTable is the table name for the PromptRequest entity.
+	// It exists in this package in order to avoid circular dependency with the "promptrequest" package.
+	PromptRequestInverseTable = "prompt_requests"
+	// PromptRequestColumn is the table column denoting the prompt_request relation/edge.
+	PromptRequestColumn = "prompt_request_prompt_response"
 )
 
 // Columns holds all SQL columns for promptresponse fields.
@@ -26,10 +36,21 @@ var Columns = []string{
 	FieldIsAnswered,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "prompt_responses"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"prompt_request_prompt_response",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -57,4 +78,18 @@ func ByResponse(opts ...sql.OrderTermOption) OrderOption {
 // ByIsAnswered orders the results by the is_answered field.
 func ByIsAnswered(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsAnswered, opts...).ToFunc()
+}
+
+// ByPromptRequestField orders the results by prompt_request field.
+func ByPromptRequestField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPromptRequestStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPromptRequestStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PromptRequestInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, true, PromptRequestTable, PromptRequestColumn),
+	)
 }

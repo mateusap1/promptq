@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "identifier", Type: field.TypeString, Unique: true},
 		{Name: "prompt", Type: field.TypeString},
-		{Name: "queued", Type: field.TypeBool, Default: false},
+		{Name: "is_queued", Type: field.TypeBool, Default: false},
 	}
 	// PromptRequestsTable holds the schema information for the "prompt_requests" table.
 	PromptRequestsTable = &schema.Table{
@@ -26,12 +26,21 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "response", Type: field.TypeString},
 		{Name: "is_answered", Type: field.TypeBool, Default: false},
+		{Name: "prompt_request_prompt_response", Type: field.TypeInt, Unique: true},
 	}
 	// PromptResponsesTable holds the schema information for the "prompt_responses" table.
 	PromptResponsesTable = &schema.Table{
 		Name:       "prompt_responses",
 		Columns:    PromptResponsesColumns,
 		PrimaryKey: []*schema.Column{PromptResponsesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "prompt_responses_prompt_requests_prompt_response",
+				Columns:    []*schema.Column{PromptResponsesColumns[3]},
+				RefColumns: []*schema.Column{PromptRequestsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
@@ -41,4 +50,5 @@ var (
 )
 
 func init() {
+	PromptResponsesTable.ForeignKeys[0].RefTable = PromptRequestsTable
 }

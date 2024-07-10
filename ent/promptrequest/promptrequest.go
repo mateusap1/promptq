@@ -4,6 +4,7 @@ package promptrequest
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -15,10 +16,19 @@ const (
 	FieldIdentifier = "identifier"
 	// FieldPrompt holds the string denoting the prompt field in the database.
 	FieldPrompt = "prompt"
-	// FieldQueued holds the string denoting the queued field in the database.
-	FieldQueued = "queued"
+	// FieldIsQueued holds the string denoting the is_queued field in the database.
+	FieldIsQueued = "is_queued"
+	// EdgePromptResponse holds the string denoting the prompt_response edge name in mutations.
+	EdgePromptResponse = "prompt_response"
 	// Table holds the table name of the promptrequest in the database.
 	Table = "prompt_requests"
+	// PromptResponseTable is the table that holds the prompt_response relation/edge.
+	PromptResponseTable = "prompt_responses"
+	// PromptResponseInverseTable is the table name for the PromptResponse entity.
+	// It exists in this package in order to avoid circular dependency with the "promptresponse" package.
+	PromptResponseInverseTable = "prompt_responses"
+	// PromptResponseColumn is the table column denoting the prompt_response relation/edge.
+	PromptResponseColumn = "prompt_request_prompt_response"
 )
 
 // Columns holds all SQL columns for promptrequest fields.
@@ -26,7 +36,7 @@ var Columns = []string{
 	FieldID,
 	FieldIdentifier,
 	FieldPrompt,
-	FieldQueued,
+	FieldIsQueued,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -42,8 +52,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIdentifier holds the default value on creation for the "identifier" field.
 	DefaultIdentifier func() string
-	// DefaultQueued holds the default value on creation for the "queued" field.
-	DefaultQueued bool
+	// DefaultIsQueued holds the default value on creation for the "is_queued" field.
+	DefaultIsQueued bool
 )
 
 // OrderOption defines the ordering options for the PromptRequest queries.
@@ -64,7 +74,21 @@ func ByPrompt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPrompt, opts...).ToFunc()
 }
 
-// ByQueued orders the results by the queued field.
-func ByQueued(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldQueued, opts...).ToFunc()
+// ByIsQueued orders the results by the is_queued field.
+func ByIsQueued(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsQueued, opts...).ToFunc()
+}
+
+// ByPromptResponseField orders the results by prompt_response field.
+func ByPromptResponseField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPromptResponseStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPromptResponseStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PromptResponseInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, PromptResponseTable, PromptResponseColumn),
+	)
 }

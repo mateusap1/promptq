@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
@@ -55,9 +56,26 @@ func (pru *PromptResponseUpdate) SetNillableIsAnswered(b *bool) *PromptResponseU
 	return pru
 }
 
+// SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by ID.
+func (pru *PromptResponseUpdate) SetPromptRequestID(id int) *PromptResponseUpdate {
+	pru.mutation.SetPromptRequestID(id)
+	return pru
+}
+
+// SetPromptRequest sets the "prompt_request" edge to the PromptRequest entity.
+func (pru *PromptResponseUpdate) SetPromptRequest(p *PromptRequest) *PromptResponseUpdate {
+	return pru.SetPromptRequestID(p.ID)
+}
+
 // Mutation returns the PromptResponseMutation object of the builder.
 func (pru *PromptResponseUpdate) Mutation() *PromptResponseMutation {
 	return pru.mutation
+}
+
+// ClearPromptRequest clears the "prompt_request" edge to the PromptRequest entity.
+func (pru *PromptResponseUpdate) ClearPromptRequest() *PromptResponseUpdate {
+	pru.mutation.ClearPromptRequest()
+	return pru
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -87,7 +105,18 @@ func (pru *PromptResponseUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (pru *PromptResponseUpdate) check() error {
+	if _, ok := pru.mutation.PromptRequestID(); pru.mutation.PromptRequestCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "PromptResponse.prompt_request"`)
+	}
+	return nil
+}
+
 func (pru *PromptResponseUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := pru.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(promptresponse.Table, promptresponse.Columns, sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt))
 	if ps := pru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -101,6 +130,35 @@ func (pru *PromptResponseUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if value, ok := pru.mutation.IsAnswered(); ok {
 		_spec.SetField(promptresponse.FieldIsAnswered, field.TypeBool, value)
+	}
+	if pru.mutation.PromptRequestCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   promptresponse.PromptRequestTable,
+			Columns: []string{promptresponse.PromptRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.PromptRequestIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   promptresponse.PromptRequestTable,
+			Columns: []string{promptresponse.PromptRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -150,9 +208,26 @@ func (pruo *PromptResponseUpdateOne) SetNillableIsAnswered(b *bool) *PromptRespo
 	return pruo
 }
 
+// SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by ID.
+func (pruo *PromptResponseUpdateOne) SetPromptRequestID(id int) *PromptResponseUpdateOne {
+	pruo.mutation.SetPromptRequestID(id)
+	return pruo
+}
+
+// SetPromptRequest sets the "prompt_request" edge to the PromptRequest entity.
+func (pruo *PromptResponseUpdateOne) SetPromptRequest(p *PromptRequest) *PromptResponseUpdateOne {
+	return pruo.SetPromptRequestID(p.ID)
+}
+
 // Mutation returns the PromptResponseMutation object of the builder.
 func (pruo *PromptResponseUpdateOne) Mutation() *PromptResponseMutation {
 	return pruo.mutation
+}
+
+// ClearPromptRequest clears the "prompt_request" edge to the PromptRequest entity.
+func (pruo *PromptResponseUpdateOne) ClearPromptRequest() *PromptResponseUpdateOne {
+	pruo.mutation.ClearPromptRequest()
+	return pruo
 }
 
 // Where appends a list predicates to the PromptResponseUpdate builder.
@@ -195,7 +270,18 @@ func (pruo *PromptResponseUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (pruo *PromptResponseUpdateOne) check() error {
+	if _, ok := pruo.mutation.PromptRequestID(); pruo.mutation.PromptRequestCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "PromptResponse.prompt_request"`)
+	}
+	return nil
+}
+
 func (pruo *PromptResponseUpdateOne) sqlSave(ctx context.Context) (_node *PromptResponse, err error) {
+	if err := pruo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(promptresponse.Table, promptresponse.Columns, sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt))
 	id, ok := pruo.mutation.ID()
 	if !ok {
@@ -226,6 +312,35 @@ func (pruo *PromptResponseUpdateOne) sqlSave(ctx context.Context) (_node *Prompt
 	}
 	if value, ok := pruo.mutation.IsAnswered(); ok {
 		_spec.SetField(promptresponse.FieldIsAnswered, field.TypeBool, value)
+	}
+	if pruo.mutation.PromptRequestCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   promptresponse.PromptRequestTable,
+			Columns: []string{promptresponse.PromptRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.PromptRequestIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   promptresponse.PromptRequestTable,
+			Columns: []string{promptresponse.PromptRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &PromptResponse{config: pruo.config}
 	_spec.Assign = _node.assignValues

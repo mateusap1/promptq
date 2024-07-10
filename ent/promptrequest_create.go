@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
 // PromptRequestCreate is the builder for creating a PromptRequest entity.
@@ -39,18 +40,37 @@ func (prc *PromptRequestCreate) SetPrompt(s string) *PromptRequestCreate {
 	return prc
 }
 
-// SetQueued sets the "queued" field.
-func (prc *PromptRequestCreate) SetQueued(b bool) *PromptRequestCreate {
-	prc.mutation.SetQueued(b)
+// SetIsQueued sets the "is_queued" field.
+func (prc *PromptRequestCreate) SetIsQueued(b bool) *PromptRequestCreate {
+	prc.mutation.SetIsQueued(b)
 	return prc
 }
 
-// SetNillableQueued sets the "queued" field if the given value is not nil.
-func (prc *PromptRequestCreate) SetNillableQueued(b *bool) *PromptRequestCreate {
+// SetNillableIsQueued sets the "is_queued" field if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableIsQueued(b *bool) *PromptRequestCreate {
 	if b != nil {
-		prc.SetQueued(*b)
+		prc.SetIsQueued(*b)
 	}
 	return prc
+}
+
+// SetPromptResponseID sets the "prompt_response" edge to the PromptResponse entity by ID.
+func (prc *PromptRequestCreate) SetPromptResponseID(id int) *PromptRequestCreate {
+	prc.mutation.SetPromptResponseID(id)
+	return prc
+}
+
+// SetNillablePromptResponseID sets the "prompt_response" edge to the PromptResponse entity by ID if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillablePromptResponseID(id *int) *PromptRequestCreate {
+	if id != nil {
+		prc = prc.SetPromptResponseID(*id)
+	}
+	return prc
+}
+
+// SetPromptResponse sets the "prompt_response" edge to the PromptResponse entity.
+func (prc *PromptRequestCreate) SetPromptResponse(p *PromptResponse) *PromptRequestCreate {
+	return prc.SetPromptResponseID(p.ID)
 }
 
 // Mutation returns the PromptRequestMutation object of the builder.
@@ -92,9 +112,9 @@ func (prc *PromptRequestCreate) defaults() {
 		v := promptrequest.DefaultIdentifier()
 		prc.mutation.SetIdentifier(v)
 	}
-	if _, ok := prc.mutation.Queued(); !ok {
-		v := promptrequest.DefaultQueued
-		prc.mutation.SetQueued(v)
+	if _, ok := prc.mutation.IsQueued(); !ok {
+		v := promptrequest.DefaultIsQueued
+		prc.mutation.SetIsQueued(v)
 	}
 }
 
@@ -106,8 +126,8 @@ func (prc *PromptRequestCreate) check() error {
 	if _, ok := prc.mutation.Prompt(); !ok {
 		return &ValidationError{Name: "prompt", err: errors.New(`ent: missing required field "PromptRequest.prompt"`)}
 	}
-	if _, ok := prc.mutation.Queued(); !ok {
-		return &ValidationError{Name: "queued", err: errors.New(`ent: missing required field "PromptRequest.queued"`)}
+	if _, ok := prc.mutation.IsQueued(); !ok {
+		return &ValidationError{Name: "is_queued", err: errors.New(`ent: missing required field "PromptRequest.is_queued"`)}
 	}
 	return nil
 }
@@ -143,9 +163,25 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 		_node.Prompt = value
 	}
-	if value, ok := prc.mutation.Queued(); ok {
-		_spec.SetField(promptrequest.FieldQueued, field.TypeBool, value)
-		_node.Queued = value
+	if value, ok := prc.mutation.IsQueued(); ok {
+		_spec.SetField(promptrequest.FieldIsQueued, field.TypeBool, value)
+		_node.IsQueued = value
+	}
+	if nodes := prc.mutation.PromptResponseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   promptrequest.PromptResponseTable,
+			Columns: []string{promptrequest.PromptResponseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
