@@ -42,20 +42,6 @@ func (pru *PromptResponseUpdate) SetNillableResponse(s *string) *PromptResponseU
 	return pru
 }
 
-// SetIsAnswered sets the "is_answered" field.
-func (pru *PromptResponseUpdate) SetIsAnswered(b bool) *PromptResponseUpdate {
-	pru.mutation.SetIsAnswered(b)
-	return pru
-}
-
-// SetNillableIsAnswered sets the "is_answered" field if the given value is not nil.
-func (pru *PromptResponseUpdate) SetNillableIsAnswered(b *bool) *PromptResponseUpdate {
-	if b != nil {
-		pru.SetIsAnswered(*b)
-	}
-	return pru
-}
-
 // SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by ID.
 func (pru *PromptResponseUpdate) SetPromptRequestID(id int) *PromptResponseUpdate {
 	pru.mutation.SetPromptRequestID(id)
@@ -128,9 +114,6 @@ func (pru *PromptResponseUpdate) sqlSave(ctx context.Context) (n int, err error)
 	if value, ok := pru.mutation.Response(); ok {
 		_spec.SetField(promptresponse.FieldResponse, field.TypeString, value)
 	}
-	if value, ok := pru.mutation.IsAnswered(); ok {
-		_spec.SetField(promptresponse.FieldIsAnswered, field.TypeBool, value)
-	}
 	if pru.mutation.PromptRequestCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -190,20 +173,6 @@ func (pruo *PromptResponseUpdateOne) SetResponse(s string) *PromptResponseUpdate
 func (pruo *PromptResponseUpdateOne) SetNillableResponse(s *string) *PromptResponseUpdateOne {
 	if s != nil {
 		pruo.SetResponse(*s)
-	}
-	return pruo
-}
-
-// SetIsAnswered sets the "is_answered" field.
-func (pruo *PromptResponseUpdateOne) SetIsAnswered(b bool) *PromptResponseUpdateOne {
-	pruo.mutation.SetIsAnswered(b)
-	return pruo
-}
-
-// SetNillableIsAnswered sets the "is_answered" field if the given value is not nil.
-func (pruo *PromptResponseUpdateOne) SetNillableIsAnswered(b *bool) *PromptResponseUpdateOne {
-	if b != nil {
-		pruo.SetIsAnswered(*b)
 	}
 	return pruo
 }
@@ -309,9 +278,6 @@ func (pruo *PromptResponseUpdateOne) sqlSave(ctx context.Context) (_node *Prompt
 	}
 	if value, ok := pruo.mutation.Response(); ok {
 		_spec.SetField(promptresponse.FieldResponse, field.TypeString, value)
-	}
-	if value, ok := pruo.mutation.IsAnswered(); ok {
-		_spec.SetField(promptresponse.FieldIsAnswered, field.TypeBool, value)
 	}
 	if pruo.mutation.PromptRequestCleared() {
 		edge := &sqlgraph.EdgeSpec{

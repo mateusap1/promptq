@@ -58,11 +58,6 @@ func Response(v string) predicate.PromptResponse {
 	return predicate.PromptResponse(sql.FieldEQ(FieldResponse, v))
 }
 
-// IsAnswered applies equality check predicate on the "is_answered" field. It's identical to IsAnsweredEQ.
-func IsAnswered(v bool) predicate.PromptResponse {
-	return predicate.PromptResponse(sql.FieldEQ(FieldIsAnswered, v))
-}
-
 // ResponseEQ applies the EQ predicate on the "response" field.
 func ResponseEQ(v string) predicate.PromptResponse {
 	return predicate.PromptResponse(sql.FieldEQ(FieldResponse, v))
@@ -126,16 +121,6 @@ func ResponseEqualFold(v string) predicate.PromptResponse {
 // ResponseContainsFold applies the ContainsFold predicate on the "response" field.
 func ResponseContainsFold(v string) predicate.PromptResponse {
 	return predicate.PromptResponse(sql.FieldContainsFold(FieldResponse, v))
-}
-
-// IsAnsweredEQ applies the EQ predicate on the "is_answered" field.
-func IsAnsweredEQ(v bool) predicate.PromptResponse {
-	return predicate.PromptResponse(sql.FieldEQ(FieldIsAnswered, v))
-}
-
-// IsAnsweredNEQ applies the NEQ predicate on the "is_answered" field.
-func IsAnsweredNEQ(v bool) predicate.PromptResponse {
-	return predicate.PromptResponse(sql.FieldNEQ(FieldIsAnswered, v))
 }
 
 // HasPromptRequest applies the HasEdge predicate on the "prompt_request" edge.

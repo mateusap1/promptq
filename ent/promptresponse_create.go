@@ -26,20 +26,6 @@ func (prc *PromptResponseCreate) SetResponse(s string) *PromptResponseCreate {
 	return prc
 }
 
-// SetIsAnswered sets the "is_answered" field.
-func (prc *PromptResponseCreate) SetIsAnswered(b bool) *PromptResponseCreate {
-	prc.mutation.SetIsAnswered(b)
-	return prc
-}
-
-// SetNillableIsAnswered sets the "is_answered" field if the given value is not nil.
-func (prc *PromptResponseCreate) SetNillableIsAnswered(b *bool) *PromptResponseCreate {
-	if b != nil {
-		prc.SetIsAnswered(*b)
-	}
-	return prc
-}
-
 // SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by ID.
 func (prc *PromptResponseCreate) SetPromptRequestID(id int) *PromptResponseCreate {
 	prc.mutation.SetPromptRequestID(id)
@@ -58,7 +44,6 @@ func (prc *PromptResponseCreate) Mutation() *PromptResponseMutation {
 
 // Save creates the PromptResponse in the database.
 func (prc *PromptResponseCreate) Save(ctx context.Context) (*PromptResponse, error) {
-	prc.defaults()
 	return withHooks(ctx, prc.sqlSave, prc.mutation, prc.hooks)
 }
 
@@ -84,21 +69,10 @@ func (prc *PromptResponseCreate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (prc *PromptResponseCreate) defaults() {
-	if _, ok := prc.mutation.IsAnswered(); !ok {
-		v := promptresponse.DefaultIsAnswered
-		prc.mutation.SetIsAnswered(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (prc *PromptResponseCreate) check() error {
 	if _, ok := prc.mutation.Response(); !ok {
 		return &ValidationError{Name: "response", err: errors.New(`ent: missing required field "PromptResponse.response"`)}
-	}
-	if _, ok := prc.mutation.IsAnswered(); !ok {
-		return &ValidationError{Name: "is_answered", err: errors.New(`ent: missing required field "PromptResponse.is_answered"`)}
 	}
 	if _, ok := prc.mutation.PromptRequestID(); !ok {
 		return &ValidationError{Name: "prompt_request", err: errors.New(`ent: missing required edge "PromptResponse.prompt_request"`)}
@@ -132,10 +106,6 @@ func (prc *PromptResponseCreate) createSpec() (*PromptResponse, *sqlgraph.Create
 	if value, ok := prc.mutation.Response(); ok {
 		_spec.SetField(promptresponse.FieldResponse, field.TypeString, value)
 		_node.Response = value
-	}
-	if value, ok := prc.mutation.IsAnswered(); ok {
-		_spec.SetField(promptresponse.FieldIsAnswered, field.TypeBool, value)
-		_node.IsAnswered = value
 	}
 	if nodes := prc.mutation.PromptRequestIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -175,7 +145,6 @@ func (prcb *PromptResponseCreateBulk) Save(ctx context.Context) ([]*PromptRespon
 	for i := range prcb.builders {
 		func(i int, root context.Context) {
 			builder := prcb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PromptResponseMutation)
 				if !ok {

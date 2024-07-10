@@ -15,7 +15,6 @@ type PromptResponse struct {
 func (PromptResponse) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("response"),
-		field.Bool("is_answered").Default(false),
 	}
 }
 

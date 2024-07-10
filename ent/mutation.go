@@ -536,7 +536,6 @@ type PromptResponseMutation struct {
 	typ                   string
 	id                    *int
 	response              *string
-	is_answered           *bool
 	clearedFields         map[string]struct{}
 	prompt_request        *int
 	clearedprompt_request bool
@@ -679,42 +678,6 @@ func (m *PromptResponseMutation) ResetResponse() {
 	m.response = nil
 }
 
-// SetIsAnswered sets the "is_answered" field.
-func (m *PromptResponseMutation) SetIsAnswered(b bool) {
-	m.is_answered = &b
-}
-
-// IsAnswered returns the value of the "is_answered" field in the mutation.
-func (m *PromptResponseMutation) IsAnswered() (r bool, exists bool) {
-	v := m.is_answered
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsAnswered returns the old "is_answered" field's value of the PromptResponse entity.
-// If the PromptResponse object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PromptResponseMutation) OldIsAnswered(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsAnswered is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsAnswered requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsAnswered: %w", err)
-	}
-	return oldValue.IsAnswered, nil
-}
-
-// ResetIsAnswered resets all changes to the "is_answered" field.
-func (m *PromptResponseMutation) ResetIsAnswered() {
-	m.is_answered = nil
-}
-
 // SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by id.
 func (m *PromptResponseMutation) SetPromptRequestID(id int) {
 	m.prompt_request = &id
@@ -788,12 +751,9 @@ func (m *PromptResponseMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PromptResponseMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 1)
 	if m.response != nil {
 		fields = append(fields, promptresponse.FieldResponse)
-	}
-	if m.is_answered != nil {
-		fields = append(fields, promptresponse.FieldIsAnswered)
 	}
 	return fields
 }
@@ -805,8 +765,6 @@ func (m *PromptResponseMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case promptresponse.FieldResponse:
 		return m.Response()
-	case promptresponse.FieldIsAnswered:
-		return m.IsAnswered()
 	}
 	return nil, false
 }
@@ -818,8 +776,6 @@ func (m *PromptResponseMutation) OldField(ctx context.Context, name string) (ent
 	switch name {
 	case promptresponse.FieldResponse:
 		return m.OldResponse(ctx)
-	case promptresponse.FieldIsAnswered:
-		return m.OldIsAnswered(ctx)
 	}
 	return nil, fmt.Errorf("unknown PromptResponse field %s", name)
 }
@@ -835,13 +791,6 @@ func (m *PromptResponseMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetResponse(v)
-		return nil
-	case promptresponse.FieldIsAnswered:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsAnswered(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PromptResponse field %s", name)
@@ -894,9 +843,6 @@ func (m *PromptResponseMutation) ResetField(name string) error {
 	switch name {
 	case promptresponse.FieldResponse:
 		m.ResetResponse()
-		return nil
-	case promptresponse.FieldIsAnswered:
-		m.ResetIsAnswered()
 		return nil
 	}
 	return fmt.Errorf("unknown PromptResponse field %s", name)

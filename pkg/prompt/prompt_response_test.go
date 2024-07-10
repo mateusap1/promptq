@@ -51,6 +51,5 @@ func TestMakePromptResponse(t *testing.T) {
 		assert.Equal(t, prpCount, 1)
 		assert.Equal(t, prp.Response, "Response #1")
 		assert.Equal(t, prq2.ID, prq.ID)
-		assert.Equal(t, prp.IsAnswered, false)
 	})
 }

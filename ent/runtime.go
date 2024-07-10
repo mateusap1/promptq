@@ -4,7 +4,6 @@ package ent
 
 import (
 	"github.com/mateusap1/promptq/ent/promptrequest"
-	"github.com/mateusap1/promptq/ent/promptresponse"
 	"github.com/mateusap1/promptq/ent/schema"
 )
 
@@ -22,10 +21,4 @@ func init() {
 	promptrequestDescIsQueued := promptrequestFields[2].Descriptor()
 	// promptrequest.DefaultIsQueued holds the default value on creation for the is_queued field.
 	promptrequest.DefaultIsQueued = promptrequestDescIsQueued.Default.(bool)
-	promptresponseFields := schema.PromptResponse{}.Fields()
-	_ = promptresponseFields
-	// promptresponseDescIsAnswered is the schema descriptor for is_answered field.
-	promptresponseDescIsAnswered := promptresponseFields[1].Descriptor()
-	// promptresponse.DefaultIsAnswered holds the default value on creation for the is_answered field.
-	promptresponse.DefaultIsAnswered = promptresponseDescIsAnswered.Default.(bool)
 }

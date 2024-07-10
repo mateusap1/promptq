@@ -19,8 +19,6 @@ type PromptResponse struct {
 	ID int `json:"id,omitempty"`
 	// Response holds the value of the "response" field.
 	Response string `json:"response,omitempty"`
-	// IsAnswered holds the value of the "is_answered" field.
-	IsAnswered bool `json:"is_answered,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PromptResponseQuery when eager-loading is set.
 	Edges                          PromptResponseEdges `json:"edges"`
@@ -53,8 +51,6 @@ func (*PromptResponse) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case promptresponse.FieldIsAnswered:
-			values[i] = new(sql.NullBool)
 		case promptresponse.FieldID:
 			values[i] = new(sql.NullInt64)
 		case promptresponse.FieldResponse:
@@ -87,12 +83,6 @@ func (pr *PromptResponse) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field response", values[i])
 			} else if value.Valid {
 				pr.Response = value.String
-			}
-		case promptresponse.FieldIsAnswered:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_answered", values[i])
-			} else if value.Valid {
-				pr.IsAnswered = value.Bool
 			}
 		case promptresponse.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -144,9 +134,6 @@ func (pr *PromptResponse) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
 	builder.WriteString("response=")
 	builder.WriteString(pr.Response)
-	builder.WriteString(", ")
-	builder.WriteString("is_answered=")
-	builder.WriteString(fmt.Sprintf("%v", pr.IsAnswered))
 	builder.WriteByte(')')
 	return builder.String()
 }
