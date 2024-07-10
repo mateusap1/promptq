@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/promptresponse"
 )
 
 // Client is the client that holds all ent builders.
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// PromptRequest is the client for interacting with the PromptRequest builders.
 	PromptRequest *PromptRequestClient
+	// PromptResponse is the client for interacting with the PromptResponse builders.
+	PromptResponse *PromptResponseClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -36,6 +39,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.PromptRequest = NewPromptRequestClient(c.config)
+	c.PromptResponse = NewPromptResponseClient(c.config)
 }
 
 type (
@@ -126,9 +130,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		PromptRequest: NewPromptRequestClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		PromptRequest:  NewPromptRequestClient(cfg),
+		PromptResponse: NewPromptResponseClient(cfg),
 	}, nil
 }
 
@@ -146,9 +151,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		PromptRequest: NewPromptRequestClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		PromptRequest:  NewPromptRequestClient(cfg),
+		PromptResponse: NewPromptResponseClient(cfg),
 	}, nil
 }
 
@@ -178,12 +184,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.PromptRequest.Use(hooks...)
+	c.PromptResponse.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.PromptRequest.Intercept(interceptors...)
+	c.PromptResponse.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -191,6 +199,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *PromptRequestMutation:
 		return c.PromptRequest.mutate(ctx, m)
+	case *PromptResponseMutation:
+		return c.PromptResponse.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -329,12 +339,145 @@ func (c *PromptRequestClient) mutate(ctx context.Context, m *PromptRequestMutati
 	}
 }
 
+// PromptResponseClient is a client for the PromptResponse schema.
+type PromptResponseClient struct {
+	config
+}
+
+// NewPromptResponseClient returns a client for the PromptResponse from the given config.
+func NewPromptResponseClient(c config) *PromptResponseClient {
+	return &PromptResponseClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `promptresponse.Hooks(f(g(h())))`.
+func (c *PromptResponseClient) Use(hooks ...Hook) {
+	c.hooks.PromptResponse = append(c.hooks.PromptResponse, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `promptresponse.Intercept(f(g(h())))`.
+func (c *PromptResponseClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PromptResponse = append(c.inters.PromptResponse, interceptors...)
+}
+
+// Create returns a builder for creating a PromptResponse entity.
+func (c *PromptResponseClient) Create() *PromptResponseCreate {
+	mutation := newPromptResponseMutation(c.config, OpCreate)
+	return &PromptResponseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PromptResponse entities.
+func (c *PromptResponseClient) CreateBulk(builders ...*PromptResponseCreate) *PromptResponseCreateBulk {
+	return &PromptResponseCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PromptResponseClient) MapCreateBulk(slice any, setFunc func(*PromptResponseCreate, int)) *PromptResponseCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PromptResponseCreateBulk{err: fmt.Errorf("calling to PromptResponseClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PromptResponseCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PromptResponseCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PromptResponse.
+func (c *PromptResponseClient) Update() *PromptResponseUpdate {
+	mutation := newPromptResponseMutation(c.config, OpUpdate)
+	return &PromptResponseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PromptResponseClient) UpdateOne(pr *PromptResponse) *PromptResponseUpdateOne {
+	mutation := newPromptResponseMutation(c.config, OpUpdateOne, withPromptResponse(pr))
+	return &PromptResponseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PromptResponseClient) UpdateOneID(id int) *PromptResponseUpdateOne {
+	mutation := newPromptResponseMutation(c.config, OpUpdateOne, withPromptResponseID(id))
+	return &PromptResponseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PromptResponse.
+func (c *PromptResponseClient) Delete() *PromptResponseDelete {
+	mutation := newPromptResponseMutation(c.config, OpDelete)
+	return &PromptResponseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PromptResponseClient) DeleteOne(pr *PromptResponse) *PromptResponseDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PromptResponseClient) DeleteOneID(id int) *PromptResponseDeleteOne {
+	builder := c.Delete().Where(promptresponse.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PromptResponseDeleteOne{builder}
+}
+
+// Query returns a query builder for PromptResponse.
+func (c *PromptResponseClient) Query() *PromptResponseQuery {
+	return &PromptResponseQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePromptResponse},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PromptResponse entity by its id.
+func (c *PromptResponseClient) Get(ctx context.Context, id int) (*PromptResponse, error) {
+	return c.Query().Where(promptresponse.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PromptResponseClient) GetX(ctx context.Context, id int) *PromptResponse {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PromptResponseClient) Hooks() []Hook {
+	return c.hooks.PromptResponse
+}
+
+// Interceptors returns the client interceptors.
+func (c *PromptResponseClient) Interceptors() []Interceptor {
+	return c.inters.PromptResponse
+}
+
+func (c *PromptResponseClient) mutate(ctx context.Context, m *PromptResponseMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PromptResponseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PromptResponseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PromptResponseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PromptResponseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PromptResponse mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		PromptRequest []ent.Hook
+		PromptRequest, PromptResponse []ent.Hook
 	}
 	inters struct {
-		PromptRequest []ent.Interceptor
+		PromptRequest, PromptResponse []ent.Interceptor
 	}
 )

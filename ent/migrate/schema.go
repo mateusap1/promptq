@@ -21,9 +21,22 @@ var (
 		Columns:    PromptRequestsColumns,
 		PrimaryKey: []*schema.Column{PromptRequestsColumns[0]},
 	}
+	// PromptResponsesColumns holds the columns for the "prompt_responses" table.
+	PromptResponsesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "response", Type: field.TypeString},
+		{Name: "is_answered", Type: field.TypeBool, Default: false},
+	}
+	// PromptResponsesTable holds the schema information for the "prompt_responses" table.
+	PromptResponsesTable = &schema.Table{
+		Name:       "prompt_responses",
+		Columns:    PromptResponsesColumns,
+		PrimaryKey: []*schema.Column{PromptResponsesColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		PromptRequestsTable,
+		PromptResponsesTable,
 	}
 )
 

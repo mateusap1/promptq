@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// PromptRequest is the client for interacting with the PromptRequest builders.
 	PromptRequest *PromptRequestClient
+	// PromptResponse is the client for interacting with the PromptResponse builders.
+	PromptResponse *PromptResponseClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +148,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.PromptRequest = NewPromptRequestClient(tx.config)
+	tx.PromptResponse = NewPromptResponseClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
