@@ -36,6 +36,11 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// DefaultIdentifier holds the default value on creation for the "identifier" field.
+	DefaultIdentifier func() string
+)
+
 // OrderOption defines the ordering options for the PromptRequest queries.
 type OrderOption func(*sql.Selector)
 

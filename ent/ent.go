@@ -6,13 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 	"reflect"
 	"sync"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // ent aliases to avoid import conflicts in user's code.

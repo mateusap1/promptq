@@ -11,7 +11,7 @@ var (
 	// PromptRequestsColumns holds the columns for the "prompt_requests" table.
 	PromptRequestsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "identifier", Type: field.TypeUUID, Unique: true},
+		{Name: "identifier", Type: field.TypeString, Unique: true},
 		{Name: "prompt", Type: field.TypeString},
 	}
 	// PromptRequestsTable holds the schema information for the "prompt_requests" table.

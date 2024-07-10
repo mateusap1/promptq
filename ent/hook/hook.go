@@ -5,6 +5,7 @@ package hook
 import (
 	"context"
 	"fmt"
+
 	"github.com/mateusap1/promptq/ent"
 )
 

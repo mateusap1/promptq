@@ -3,10 +3,8 @@
 package promptrequest
 
 import (
-	"github.com/mateusap1/promptq/ent/predicate"
-
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
+	"github.com/mateusap1/promptq/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -55,7 +53,7 @@ func IDLTE(id int) predicate.PromptRequest {
 }
 
 // Identifier applies equality check predicate on the "identifier" field. It's identical to IdentifierEQ.
-func Identifier(v uuid.UUID) predicate.PromptRequest {
+func Identifier(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldIdentifier, v))
 }
 
@@ -65,43 +63,68 @@ func Prompt(v string) predicate.PromptRequest {
 }
 
 // IdentifierEQ applies the EQ predicate on the "identifier" field.
-func IdentifierEQ(v uuid.UUID) predicate.PromptRequest {
+func IdentifierEQ(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldIdentifier, v))
 }
 
 // IdentifierNEQ applies the NEQ predicate on the "identifier" field.
-func IdentifierNEQ(v uuid.UUID) predicate.PromptRequest {
+func IdentifierNEQ(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldNEQ(FieldIdentifier, v))
 }
 
 // IdentifierIn applies the In predicate on the "identifier" field.
-func IdentifierIn(vs ...uuid.UUID) predicate.PromptRequest {
+func IdentifierIn(vs ...string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldIn(FieldIdentifier, vs...))
 }
 
 // IdentifierNotIn applies the NotIn predicate on the "identifier" field.
-func IdentifierNotIn(vs ...uuid.UUID) predicate.PromptRequest {
+func IdentifierNotIn(vs ...string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldNotIn(FieldIdentifier, vs...))
 }
 
 // IdentifierGT applies the GT predicate on the "identifier" field.
-func IdentifierGT(v uuid.UUID) predicate.PromptRequest {
+func IdentifierGT(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldGT(FieldIdentifier, v))
 }
 
 // IdentifierGTE applies the GTE predicate on the "identifier" field.
-func IdentifierGTE(v uuid.UUID) predicate.PromptRequest {
+func IdentifierGTE(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldGTE(FieldIdentifier, v))
 }
 
 // IdentifierLT applies the LT predicate on the "identifier" field.
-func IdentifierLT(v uuid.UUID) predicate.PromptRequest {
+func IdentifierLT(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldLT(FieldIdentifier, v))
 }
 
 // IdentifierLTE applies the LTE predicate on the "identifier" field.
-func IdentifierLTE(v uuid.UUID) predicate.PromptRequest {
+func IdentifierLTE(v string) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldLTE(FieldIdentifier, v))
+}
+
+// IdentifierContains applies the Contains predicate on the "identifier" field.
+func IdentifierContains(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldContains(FieldIdentifier, v))
+}
+
+// IdentifierHasPrefix applies the HasPrefix predicate on the "identifier" field.
+func IdentifierHasPrefix(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldHasPrefix(FieldIdentifier, v))
+}
+
+// IdentifierHasSuffix applies the HasSuffix predicate on the "identifier" field.
+func IdentifierHasSuffix(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldHasSuffix(FieldIdentifier, v))
+}
+
+// IdentifierEqualFold applies the EqualFold predicate on the "identifier" field.
+func IdentifierEqualFold(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEqualFold(FieldIdentifier, v))
+}
+
+// IdentifierContainsFold applies the ContainsFold predicate on the "identifier" field.
+func IdentifierContainsFold(v string) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldContainsFold(FieldIdentifier, v))
 }
 
 // PromptEQ applies the EQ predicate on the "prompt" field.

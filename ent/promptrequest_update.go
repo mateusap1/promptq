@@ -6,13 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mateusap1/promptq/ent/predicate"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // PromptRequestUpdate is the builder for updating PromptRequest entities.
@@ -29,15 +28,15 @@ func (pru *PromptRequestUpdate) Where(ps ...predicate.PromptRequest) *PromptRequ
 }
 
 // SetIdentifier sets the "identifier" field.
-func (pru *PromptRequestUpdate) SetIdentifier(u uuid.UUID) *PromptRequestUpdate {
-	pru.mutation.SetIdentifier(u)
+func (pru *PromptRequestUpdate) SetIdentifier(s string) *PromptRequestUpdate {
+	pru.mutation.SetIdentifier(s)
 	return pru
 }
 
 // SetNillableIdentifier sets the "identifier" field if the given value is not nil.
-func (pru *PromptRequestUpdate) SetNillableIdentifier(u *uuid.UUID) *PromptRequestUpdate {
-	if u != nil {
-		pru.SetIdentifier(*u)
+func (pru *PromptRequestUpdate) SetNillableIdentifier(s *string) *PromptRequestUpdate {
+	if s != nil {
+		pru.SetIdentifier(*s)
 	}
 	return pru
 }
@@ -98,7 +97,7 @@ func (pru *PromptRequestUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 	}
 	if value, ok := pru.mutation.Identifier(); ok {
-		_spec.SetField(promptrequest.FieldIdentifier, field.TypeUUID, value)
+		_spec.SetField(promptrequest.FieldIdentifier, field.TypeString, value)
 	}
 	if value, ok := pru.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
@@ -124,15 +123,15 @@ type PromptRequestUpdateOne struct {
 }
 
 // SetIdentifier sets the "identifier" field.
-func (pruo *PromptRequestUpdateOne) SetIdentifier(u uuid.UUID) *PromptRequestUpdateOne {
-	pruo.mutation.SetIdentifier(u)
+func (pruo *PromptRequestUpdateOne) SetIdentifier(s string) *PromptRequestUpdateOne {
+	pruo.mutation.SetIdentifier(s)
 	return pruo
 }
 
 // SetNillableIdentifier sets the "identifier" field if the given value is not nil.
-func (pruo *PromptRequestUpdateOne) SetNillableIdentifier(u *uuid.UUID) *PromptRequestUpdateOne {
-	if u != nil {
-		pruo.SetIdentifier(*u)
+func (pruo *PromptRequestUpdateOne) SetNillableIdentifier(s *string) *PromptRequestUpdateOne {
+	if s != nil {
+		pruo.SetIdentifier(*s)
 	}
 	return pruo
 }
@@ -223,7 +222,7 @@ func (pruo *PromptRequestUpdateOne) sqlSave(ctx context.Context) (_node *PromptR
 		}
 	}
 	if value, ok := pruo.mutation.Identifier(); ok {
-		_spec.SetField(promptrequest.FieldIdentifier, field.TypeUUID, value)
+		_spec.SetField(promptrequest.FieldIdentifier, field.TypeString, value)
 	}
 	if value, ok := pruo.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)

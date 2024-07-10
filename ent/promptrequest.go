@@ -4,12 +4,11 @@ package ent
 
 import (
 	"fmt"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // PromptRequest is the model entity for the PromptRequest schema.
@@ -18,7 +17,7 @@ type PromptRequest struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Identifier holds the value of the "identifier" field.
-	Identifier uuid.UUID `json:"identifier,omitempty"`
+	Identifier string `json:"identifier,omitempty"`
 	// Prompt holds the value of the "prompt" field.
 	Prompt       string `json:"prompt,omitempty"`
 	selectValues sql.SelectValues
@@ -31,10 +30,8 @@ func (*PromptRequest) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case promptrequest.FieldID:
 			values[i] = new(sql.NullInt64)
-		case promptrequest.FieldPrompt:
+		case promptrequest.FieldIdentifier, promptrequest.FieldPrompt:
 			values[i] = new(sql.NullString)
-		case promptrequest.FieldIdentifier:
-			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -57,10 +54,10 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 			}
 			pr.ID = int(value.Int64)
 		case promptrequest.FieldIdentifier:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field identifier", values[i])
-			} else if value != nil {
-				pr.Identifier = *value
+			} else if value.Valid {
+				pr.Identifier = value.String
 			}
 		case promptrequest.FieldPrompt:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -105,7 +102,7 @@ func (pr *PromptRequest) String() string {
 	builder.WriteString("PromptRequest(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
 	builder.WriteString("identifier=")
-	builder.WriteString(fmt.Sprintf("%v", pr.Identifier))
+	builder.WriteString(pr.Identifier)
 	builder.WriteString(", ")
 	builder.WriteString("prompt=")
 	builder.WriteString(pr.Prompt)

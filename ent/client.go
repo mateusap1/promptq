@@ -11,11 +11,10 @@ import (
 
 	"github.com/mateusap1/promptq/ent/migrate"
 
-	"github.com/mateusap1/promptq/ent/promptrequest"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // Client is the client that holds all ent builders.

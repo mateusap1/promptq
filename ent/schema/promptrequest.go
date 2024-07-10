@@ -11,10 +11,16 @@ type PromptRequest struct {
 	ent.Schema
 }
 
+func newUUID() string {
+	result := uuid.New()
+	return result.String()
+}
+
 // Fields of the PromptRequest.
 func (PromptRequest) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("identifier", uuid.New()).Unique(),
+		// field.String("identifier").DefaultFunc(newUUID).Unique(),
+		field.String("identifier").DefaultFunc(newUUID).Unique(),
 		field.String("prompt"),
 	}
 }

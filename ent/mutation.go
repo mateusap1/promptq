@@ -6,13 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mateusap1/promptq/ent/predicate"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 	"sync"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
+	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 const (
@@ -33,7 +32,7 @@ type PromptRequestMutation struct {
 	op            Op
 	typ           string
 	id            *int
-	identifier    *uuid.UUID
+	identifier    *string
 	prompt        *string
 	clearedFields map[string]struct{}
 	done          bool
@@ -140,12 +139,12 @@ func (m *PromptRequestMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetIdentifier sets the "identifier" field.
-func (m *PromptRequestMutation) SetIdentifier(u uuid.UUID) {
-	m.identifier = &u
+func (m *PromptRequestMutation) SetIdentifier(s string) {
+	m.identifier = &s
 }
 
 // Identifier returns the value of the "identifier" field in the mutation.
-func (m *PromptRequestMutation) Identifier() (r uuid.UUID, exists bool) {
+func (m *PromptRequestMutation) Identifier() (r string, exists bool) {
 	v := m.identifier
 	if v == nil {
 		return
@@ -156,7 +155,7 @@ func (m *PromptRequestMutation) Identifier() (r uuid.UUID, exists bool) {
 // OldIdentifier returns the old "identifier" field's value of the PromptRequest entity.
 // If the PromptRequest object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PromptRequestMutation) OldIdentifier(ctx context.Context) (v uuid.UUID, err error) {
+func (m *PromptRequestMutation) OldIdentifier(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIdentifier is only allowed on UpdateOne operations")
 	}
@@ -287,7 +286,7 @@ func (m *PromptRequestMutation) OldField(ctx context.Context, name string) (ent.
 func (m *PromptRequestMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case promptrequest.FieldIdentifier:
-		v, ok := value.(uuid.UUID)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

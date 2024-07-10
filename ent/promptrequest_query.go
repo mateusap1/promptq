@@ -6,12 +6,12 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"github.com/mateusap1/promptq/ent/predicate"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // PromptRequestQuery is the builder for querying PromptRequest entities.
@@ -261,7 +261,7 @@ func (prq *PromptRequestQuery) Clone() *PromptRequestQuery {
 // Example:
 //
 //	var v []struct {
-//		Identifier uuid.UUID `json:"identifier,omitempty"`
+//		Identifier string `json:"identifier,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -284,7 +284,7 @@ func (prq *PromptRequestQuery) GroupBy(field string, fields ...string) *PromptRe
 // Example:
 //
 //	var v []struct {
-//		Identifier uuid.UUID `json:"identifier,omitempty"`
+//		Identifier string `json:"identifier,omitempty"`
 //	}
 //
 //	client.PromptRequest.Query().

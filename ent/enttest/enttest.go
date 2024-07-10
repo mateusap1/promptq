@@ -4,13 +4,13 @@ package enttest
 
 import (
 	"context"
+
 	"github.com/mateusap1/promptq/ent"
 	// required by schema hooks.
 	_ "github.com/mateusap1/promptq/ent/runtime"
 
-	"github.com/mateusap1/promptq/ent/migrate"
-
 	"entgo.io/ent/dialect/sql/schema"
+	"github.com/mateusap1/promptq/ent/migrate"
 )
 
 type (

@@ -6,11 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // PromptRequestCreate is the builder for creating a PromptRequest entity.
@@ -21,8 +20,16 @@ type PromptRequestCreate struct {
 }
 
 // SetIdentifier sets the "identifier" field.
-func (prc *PromptRequestCreate) SetIdentifier(u uuid.UUID) *PromptRequestCreate {
-	prc.mutation.SetIdentifier(u)
+func (prc *PromptRequestCreate) SetIdentifier(s string) *PromptRequestCreate {
+	prc.mutation.SetIdentifier(s)
+	return prc
+}
+
+// SetNillableIdentifier sets the "identifier" field if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableIdentifier(s *string) *PromptRequestCreate {
+	if s != nil {
+		prc.SetIdentifier(*s)
+	}
 	return prc
 }
 
@@ -39,6 +46,7 @@ func (prc *PromptRequestCreate) Mutation() *PromptRequestMutation {
 
 // Save creates the PromptRequest in the database.
 func (prc *PromptRequestCreate) Save(ctx context.Context) (*PromptRequest, error) {
+	prc.defaults()
 	return withHooks(ctx, prc.sqlSave, prc.mutation, prc.hooks)
 }
 
@@ -61,6 +69,14 @@ func (prc *PromptRequestCreate) Exec(ctx context.Context) error {
 func (prc *PromptRequestCreate) ExecX(ctx context.Context) {
 	if err := prc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (prc *PromptRequestCreate) defaults() {
+	if _, ok := prc.mutation.Identifier(); !ok {
+		v := promptrequest.DefaultIdentifier()
+		prc.mutation.SetIdentifier(v)
 	}
 }
 
@@ -99,7 +115,7 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 		_spec = sqlgraph.NewCreateSpec(promptrequest.Table, sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt))
 	)
 	if value, ok := prc.mutation.Identifier(); ok {
-		_spec.SetField(promptrequest.FieldIdentifier, field.TypeUUID, value)
+		_spec.SetField(promptrequest.FieldIdentifier, field.TypeString, value)
 		_node.Identifier = value
 	}
 	if value, ok := prc.mutation.Prompt(); ok {
@@ -127,6 +143,7 @@ func (prcb *PromptRequestCreateBulk) Save(ctx context.Context) ([]*PromptRequest
 	for i := range prcb.builders {
 		func(i int, root context.Context) {
 			builder := prcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PromptRequestMutation)
 				if !ok {

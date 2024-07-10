@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
-	"github.com/mateusap1/promptq/ent/predicate"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
 // PromptRequestDelete is the builder for deleting a PromptRequest entity.
