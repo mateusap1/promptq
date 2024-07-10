@@ -22,3 +22,12 @@ func MakePromptRequest(ctx context.Context, client *ent.Client, prompt string) (
 
 	return u, nil
 }
+
+func QueuePromptRequest(ctx context.Context, client *ent.Client, promptRequest *ent.PromptRequest) (*ent.PromptRequest, error) {
+	pr, err := promptRequest.Update().SetQueued(true).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed updating prompt request: %w", err)
+	}
+
+	return pr, nil
+}
