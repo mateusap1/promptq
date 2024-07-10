@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "identifier", Type: field.TypeString, Unique: true},
 		{Name: "prompt", Type: field.TypeString},
-		{Name: "state", Type: field.TypeString, Default: "awaiting"},
+		{Name: "queued", Type: field.TypeBool, Default: false},
 	}
 	// PromptRequestsTable holds the schema information for the "prompt_requests" table.
 	PromptRequestsTable = &schema.Table{

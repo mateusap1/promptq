@@ -15,8 +15,8 @@ const (
 	FieldIdentifier = "identifier"
 	// FieldPrompt holds the string denoting the prompt field in the database.
 	FieldPrompt = "prompt"
-	// FieldState holds the string denoting the state field in the database.
-	FieldState = "state"
+	// FieldQueued holds the string denoting the queued field in the database.
+	FieldQueued = "queued"
 	// Table holds the table name of the promptrequest in the database.
 	Table = "prompt_requests"
 )
@@ -26,7 +26,7 @@ var Columns = []string{
 	FieldID,
 	FieldIdentifier,
 	FieldPrompt,
-	FieldState,
+	FieldQueued,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -42,8 +42,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIdentifier holds the default value on creation for the "identifier" field.
 	DefaultIdentifier func() string
-	// DefaultState holds the default value on creation for the "state" field.
-	DefaultState string
+	// DefaultQueued holds the default value on creation for the "queued" field.
+	DefaultQueued bool
 )
 
 // OrderOption defines the ordering options for the PromptRequest queries.
@@ -64,7 +64,7 @@ func ByPrompt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPrompt, opts...).ToFunc()
 }
 
-// ByState orders the results by the state field.
-func ByState(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldState, opts...).ToFunc()
+// ByQueued orders the results by the queued field.
+func ByQueued(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldQueued, opts...).ToFunc()
 }

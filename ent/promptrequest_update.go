@@ -55,16 +55,16 @@ func (pru *PromptRequestUpdate) SetNillablePrompt(s *string) *PromptRequestUpdat
 	return pru
 }
 
-// SetState sets the "state" field.
-func (pru *PromptRequestUpdate) SetState(s string) *PromptRequestUpdate {
-	pru.mutation.SetState(s)
+// SetQueued sets the "queued" field.
+func (pru *PromptRequestUpdate) SetQueued(b bool) *PromptRequestUpdate {
+	pru.mutation.SetQueued(b)
 	return pru
 }
 
-// SetNillableState sets the "state" field if the given value is not nil.
-func (pru *PromptRequestUpdate) SetNillableState(s *string) *PromptRequestUpdate {
-	if s != nil {
-		pru.SetState(*s)
+// SetNillableQueued sets the "queued" field if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillableQueued(b *bool) *PromptRequestUpdate {
+	if b != nil {
+		pru.SetQueued(*b)
 	}
 	return pru
 }
@@ -116,8 +116,8 @@ func (pru *PromptRequestUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := pru.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
-	if value, ok := pru.mutation.State(); ok {
-		_spec.SetField(promptrequest.FieldState, field.TypeString, value)
+	if value, ok := pru.mutation.Queued(); ok {
+		_spec.SetField(promptrequest.FieldQueued, field.TypeBool, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -167,16 +167,16 @@ func (pruo *PromptRequestUpdateOne) SetNillablePrompt(s *string) *PromptRequestU
 	return pruo
 }
 
-// SetState sets the "state" field.
-func (pruo *PromptRequestUpdateOne) SetState(s string) *PromptRequestUpdateOne {
-	pruo.mutation.SetState(s)
+// SetQueued sets the "queued" field.
+func (pruo *PromptRequestUpdateOne) SetQueued(b bool) *PromptRequestUpdateOne {
+	pruo.mutation.SetQueued(b)
 	return pruo
 }
 
-// SetNillableState sets the "state" field if the given value is not nil.
-func (pruo *PromptRequestUpdateOne) SetNillableState(s *string) *PromptRequestUpdateOne {
-	if s != nil {
-		pruo.SetState(*s)
+// SetNillableQueued sets the "queued" field if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillableQueued(b *bool) *PromptRequestUpdateOne {
+	if b != nil {
+		pruo.SetQueued(*b)
 	}
 	return pruo
 }
@@ -258,8 +258,8 @@ func (pruo *PromptRequestUpdateOne) sqlSave(ctx context.Context) (_node *PromptR
 	if value, ok := pruo.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
-	if value, ok := pruo.mutation.State(); ok {
-		_spec.SetField(promptrequest.FieldState, field.TypeString, value)
+	if value, ok := pruo.mutation.Queued(); ok {
+		_spec.SetField(promptrequest.FieldQueued, field.TypeBool, value)
 	}
 	_node = &PromptRequest{config: pruo.config}
 	_spec.Assign = _node.assignValues

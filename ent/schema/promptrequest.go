@@ -21,7 +21,7 @@ func (PromptRequest) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("identifier").DefaultFunc(newUUID).Unique(),
 		field.String("prompt"),
-		field.String("state").Default("awaiting"),
+		field.Bool("queued").Default(false),
 	}
 }
 

@@ -39,16 +39,16 @@ func (prc *PromptRequestCreate) SetPrompt(s string) *PromptRequestCreate {
 	return prc
 }
 
-// SetState sets the "state" field.
-func (prc *PromptRequestCreate) SetState(s string) *PromptRequestCreate {
-	prc.mutation.SetState(s)
+// SetQueued sets the "queued" field.
+func (prc *PromptRequestCreate) SetQueued(b bool) *PromptRequestCreate {
+	prc.mutation.SetQueued(b)
 	return prc
 }
 
-// SetNillableState sets the "state" field if the given value is not nil.
-func (prc *PromptRequestCreate) SetNillableState(s *string) *PromptRequestCreate {
-	if s != nil {
-		prc.SetState(*s)
+// SetNillableQueued sets the "queued" field if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableQueued(b *bool) *PromptRequestCreate {
+	if b != nil {
+		prc.SetQueued(*b)
 	}
 	return prc
 }
@@ -92,9 +92,9 @@ func (prc *PromptRequestCreate) defaults() {
 		v := promptrequest.DefaultIdentifier()
 		prc.mutation.SetIdentifier(v)
 	}
-	if _, ok := prc.mutation.State(); !ok {
-		v := promptrequest.DefaultState
-		prc.mutation.SetState(v)
+	if _, ok := prc.mutation.Queued(); !ok {
+		v := promptrequest.DefaultQueued
+		prc.mutation.SetQueued(v)
 	}
 }
 
@@ -106,8 +106,8 @@ func (prc *PromptRequestCreate) check() error {
 	if _, ok := prc.mutation.Prompt(); !ok {
 		return &ValidationError{Name: "prompt", err: errors.New(`ent: missing required field "PromptRequest.prompt"`)}
 	}
-	if _, ok := prc.mutation.State(); !ok {
-		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "PromptRequest.state"`)}
+	if _, ok := prc.mutation.Queued(); !ok {
+		return &ValidationError{Name: "queued", err: errors.New(`ent: missing required field "PromptRequest.queued"`)}
 	}
 	return nil
 }
@@ -143,9 +143,9 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 		_node.Prompt = value
 	}
-	if value, ok := prc.mutation.State(); ok {
-		_spec.SetField(promptrequest.FieldState, field.TypeString, value)
-		_node.State = value
+	if value, ok := prc.mutation.Queued(); ok {
+		_spec.SetField(promptrequest.FieldQueued, field.TypeBool, value)
+		_node.Queued = value
 	}
 	return _node, _spec
 }

@@ -38,6 +38,6 @@ func TestMakePromptRequest(t *testing.T) {
 
 		assert.Equal(t, prCount, 1)
 		assert.Equal(t, pr.Prompt, "Prompt #1")
-		assert.Equal(t, pr.State, "awaiting")
+		assert.Equal(t, pr.Queued, false)
 	})
 }

@@ -20,8 +20,8 @@ type PromptRequest struct {
 	Identifier string `json:"identifier,omitempty"`
 	// Prompt holds the value of the "prompt" field.
 	Prompt string `json:"prompt,omitempty"`
-	// State holds the value of the "state" field.
-	State        string `json:"state,omitempty"`
+	// Queued holds the value of the "queued" field.
+	Queued       bool `json:"queued,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -30,9 +30,11 @@ func (*PromptRequest) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case promptrequest.FieldQueued:
+			values[i] = new(sql.NullBool)
 		case promptrequest.FieldID:
 			values[i] = new(sql.NullInt64)
-		case promptrequest.FieldIdentifier, promptrequest.FieldPrompt, promptrequest.FieldState:
+		case promptrequest.FieldIdentifier, promptrequest.FieldPrompt:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -67,11 +69,11 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Prompt = value.String
 			}
-		case promptrequest.FieldState:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field state", values[i])
+		case promptrequest.FieldQueued:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field queued", values[i])
 			} else if value.Valid {
-				pr.State = value.String
+				pr.Queued = value.Bool
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -115,8 +117,8 @@ func (pr *PromptRequest) String() string {
 	builder.WriteString("prompt=")
 	builder.WriteString(pr.Prompt)
 	builder.WriteString(", ")
-	builder.WriteString("state=")
-	builder.WriteString(pr.State)
+	builder.WriteString("queued=")
+	builder.WriteString(fmt.Sprintf("%v", pr.Queued))
 	builder.WriteByte(')')
 	return builder.String()
 }
