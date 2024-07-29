@@ -26,7 +26,19 @@ func MakePromptRequest(ctx context.Context, client *ent.Client, prompt string) (
 }
 
 func HasQueuePromptRequest(ctx context.Context, client *ent.Client) (bool, error) {
-	return false, nil
+	num, err := client.PromptRequest.
+		Query().
+		Where(promptrequest.And(promptrequest.IsQueued(false), promptrequest.IsAnswered(false))).
+		Count(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed querying count of unqueued prompt requests: %w", err)
+	}
+
+	if num > 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
 func QueuePromptRequest(ctx context.Context, client *ent.Client) (*ent.PromptRequest, error) {

@@ -30,6 +30,8 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/health", api.GetHealth)
+	router.POST("/prompt", func(c *gin.Context) { api.CreatePrompt(c, ctx, client) })
+	router.PUT("/prompt", func(c *gin.Context) { api.QueuePrompt(c, ctx, client) })
 
 	// For running in production just use router.Run()
 	router.Run("localhost:8080")

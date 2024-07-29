@@ -51,9 +51,21 @@ func TestHasQueuePromptRequest(t *testing.T) {
 	defer client.Close()
 
 	response, err := HasQueuePromptRequest(ctx, client)
-
 	assert.Nil(t, err)
 	assert.False(t, response)
+
+	_, err = client.PromptRequest.
+		Create().
+		SetPrompt("Prompt #1").
+		Save(ctx)
+
+	if err != nil {
+		t.Fatalf("failed creating prompt request: %v", err)
+	}
+
+	response2, err2 := HasQueuePromptRequest(ctx, client)
+	assert.Nil(t, err2)
+	assert.True(t, response2)
 }
 
 func TestQueuePromptRequest(t *testing.T) {

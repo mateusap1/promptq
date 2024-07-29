@@ -17,3 +17,11 @@ type PromptResponse struct {
 type PeekPromptResponse = PromptResponse
 type DeQueuePromptResponse = PromptResponse
 type RespondPromptResponse = PromptResponse
+
+type CreatePromptRequest struct {
+	Prompt string
+}
+
+type QueuePromptRequest struct {
+	Auth string
+}
