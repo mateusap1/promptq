@@ -4,15 +4,22 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+
 	"github.com/mateusap1/promptq/ent"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/pkg/prompt"
 )
 
-const ApiKey = "secret"
+func loadDotEnv() error {
+	err := godotenv.Load(".env")
+
+	return err
+}
 
 func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 	var promptForm CreatePromptRequest
@@ -38,6 +45,24 @@ func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 }
 
 func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
+	err := loadDotEnv()
+	if err != nil {
+		fmt.Print(err)
+
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "Internal Server Error",
+		})
+		return
+	}
+
+	API_KEY, present := os.LookupEnv("API_KEY")
+	if !present {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "Undefined env variable.",
+		})
+		return
+	}
+
 	var queueForm QueuePromptRequest
 
 	if err := c.BindJSON(&queueForm); err != nil {
@@ -47,7 +72,7 @@ func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	if queueForm.Auth != ApiKey {
+	if queueForm.Auth != API_KEY {
 		c.IndentedJSON(http.StatusForbidden, gin.H{
 			"Message": "Incorrect authentication key.",
 		})
@@ -84,6 +109,24 @@ func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 }
 
 func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
+	err := loadDotEnv()
+	if err != nil {
+		fmt.Print(err)
+
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "Internal Server Error",
+		})
+		return
+	}
+
+	API_KEY, present := os.LookupEnv("API_KEY")
+	if !present {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "Undefined env variable.",
+		})
+		return
+	}
+
 	var responseForm RespondPromptRequest
 
 	if err := c.BindJSON(&responseForm); err != nil {
@@ -93,7 +136,7 @@ func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	if responseForm.Auth != ApiKey {
+	if responseForm.Auth != API_KEY {
 		c.IndentedJSON(http.StatusForbidden, gin.H{
 			"Message": "Incorrect authentication key.",
 		})
