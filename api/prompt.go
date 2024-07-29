@@ -32,7 +32,7 @@ func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, RequestPromptResponse{QueueId: pr.Identifier.String()})
+	c.IndentedJSON(http.StatusOK, RequestPromptResponse{QueueId: pr.Identifier.String(), Prompt: pr.Prompt})
 }
 
 func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
@@ -77,8 +77,6 @@ func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, gin.H{
-			"QueueId": pr.Identifier,
-		})
+		c.IndentedJSON(http.StatusOK, RequestPromptResponse{QueueId: pr.Identifier.String(), Prompt: pr.Prompt})
 	}
 }

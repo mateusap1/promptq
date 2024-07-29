@@ -6,6 +6,7 @@ type HealthResponse struct {
 
 type RequestPromptResponse struct {
 	QueueId string
+	Prompt  string
 }
 
 type PromptResponse struct {
