@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -19,6 +20,8 @@ type PromptResponse struct {
 	ID int `json:"id,omitempty"`
 	// Response holds the value of the "response" field.
 	Response string `json:"response,omitempty"`
+	// CreateDate holds the value of the "create_date" field.
+	CreateDate time.Time `json:"create_date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PromptResponseQuery when eager-loading is set.
 	Edges                          PromptResponseEdges `json:"edges"`
@@ -55,6 +58,8 @@ func (*PromptResponse) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case promptresponse.FieldResponse:
 			values[i] = new(sql.NullString)
+		case promptresponse.FieldCreateDate:
+			values[i] = new(sql.NullTime)
 		case promptresponse.ForeignKeys[0]: // prompt_request_prompt_response
 			values[i] = new(sql.NullInt64)
 		default:
@@ -83,6 +88,12 @@ func (pr *PromptResponse) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field response", values[i])
 			} else if value.Valid {
 				pr.Response = value.String
+			}
+		case promptresponse.FieldCreateDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_date", values[i])
+			} else if value.Valid {
+				pr.CreateDate = value.Time
 			}
 		case promptresponse.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -134,6 +145,9 @@ func (pr *PromptResponse) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
 	builder.WriteString("response=")
 	builder.WriteString(pr.Response)
+	builder.WriteString(", ")
+	builder.WriteString("create_date=")
+	builder.WriteString(pr.CreateDate.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

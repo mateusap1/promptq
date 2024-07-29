@@ -3,6 +3,8 @@
 package promptresponse
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mateusap1/promptq/ent/predicate"
@@ -56,6 +58,11 @@ func IDLTE(id int) predicate.PromptResponse {
 // Response applies equality check predicate on the "response" field. It's identical to ResponseEQ.
 func Response(v string) predicate.PromptResponse {
 	return predicate.PromptResponse(sql.FieldEQ(FieldResponse, v))
+}
+
+// CreateDate applies equality check predicate on the "create_date" field. It's identical to CreateDateEQ.
+func CreateDate(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldEQ(FieldCreateDate, v))
 }
 
 // ResponseEQ applies the EQ predicate on the "response" field.
@@ -121,6 +128,46 @@ func ResponseEqualFold(v string) predicate.PromptResponse {
 // ResponseContainsFold applies the ContainsFold predicate on the "response" field.
 func ResponseContainsFold(v string) predicate.PromptResponse {
 	return predicate.PromptResponse(sql.FieldContainsFold(FieldResponse, v))
+}
+
+// CreateDateEQ applies the EQ predicate on the "create_date" field.
+func CreateDateEQ(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldEQ(FieldCreateDate, v))
+}
+
+// CreateDateNEQ applies the NEQ predicate on the "create_date" field.
+func CreateDateNEQ(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldNEQ(FieldCreateDate, v))
+}
+
+// CreateDateIn applies the In predicate on the "create_date" field.
+func CreateDateIn(vs ...time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldIn(FieldCreateDate, vs...))
+}
+
+// CreateDateNotIn applies the NotIn predicate on the "create_date" field.
+func CreateDateNotIn(vs ...time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldNotIn(FieldCreateDate, vs...))
+}
+
+// CreateDateGT applies the GT predicate on the "create_date" field.
+func CreateDateGT(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldGT(FieldCreateDate, v))
+}
+
+// CreateDateGTE applies the GTE predicate on the "create_date" field.
+func CreateDateGTE(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldGTE(FieldCreateDate, v))
+}
+
+// CreateDateLT applies the LT predicate on the "create_date" field.
+func CreateDateLT(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldLT(FieldCreateDate, v))
+}
+
+// CreateDateLTE applies the LTE predicate on the "create_date" field.
+func CreateDateLTE(v time.Time) predicate.PromptResponse {
+	return predicate.PromptResponse(sql.FieldLTE(FieldCreateDate, v))
 }
 
 // HasPromptRequest applies the HasEdge predicate on the "prompt_request" edge.

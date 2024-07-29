@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,6 +24,20 @@ type PromptResponseCreate struct {
 // SetResponse sets the "response" field.
 func (prc *PromptResponseCreate) SetResponse(s string) *PromptResponseCreate {
 	prc.mutation.SetResponse(s)
+	return prc
+}
+
+// SetCreateDate sets the "create_date" field.
+func (prc *PromptResponseCreate) SetCreateDate(t time.Time) *PromptResponseCreate {
+	prc.mutation.SetCreateDate(t)
+	return prc
+}
+
+// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
+func (prc *PromptResponseCreate) SetNillableCreateDate(t *time.Time) *PromptResponseCreate {
+	if t != nil {
+		prc.SetCreateDate(*t)
+	}
 	return prc
 }
 
@@ -44,6 +59,7 @@ func (prc *PromptResponseCreate) Mutation() *PromptResponseMutation {
 
 // Save creates the PromptResponse in the database.
 func (prc *PromptResponseCreate) Save(ctx context.Context) (*PromptResponse, error) {
+	prc.defaults()
 	return withHooks(ctx, prc.sqlSave, prc.mutation, prc.hooks)
 }
 
@@ -69,10 +85,21 @@ func (prc *PromptResponseCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (prc *PromptResponseCreate) defaults() {
+	if _, ok := prc.mutation.CreateDate(); !ok {
+		v := promptresponse.DefaultCreateDate()
+		prc.mutation.SetCreateDate(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (prc *PromptResponseCreate) check() error {
 	if _, ok := prc.mutation.Response(); !ok {
 		return &ValidationError{Name: "response", err: errors.New(`ent: missing required field "PromptResponse.response"`)}
+	}
+	if _, ok := prc.mutation.CreateDate(); !ok {
+		return &ValidationError{Name: "create_date", err: errors.New(`ent: missing required field "PromptResponse.create_date"`)}
 	}
 	if _, ok := prc.mutation.PromptRequestID(); !ok {
 		return &ValidationError{Name: "prompt_request", err: errors.New(`ent: missing required edge "PromptResponse.prompt_request"`)}
@@ -106,6 +133,10 @@ func (prc *PromptResponseCreate) createSpec() (*PromptResponse, *sqlgraph.Create
 	if value, ok := prc.mutation.Response(); ok {
 		_spec.SetField(promptresponse.FieldResponse, field.TypeString, value)
 		_node.Response = value
+	}
+	if value, ok := prc.mutation.CreateDate(); ok {
+		_spec.SetField(promptresponse.FieldCreateDate, field.TypeTime, value)
+		_node.CreateDate = value
 	}
 	if nodes := prc.mutation.PromptRequestIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -145,6 +176,7 @@ func (prcb *PromptResponseCreateBulk) Save(ctx context.Context) ([]*PromptRespon
 	for i := range prcb.builders {
 		func(i int, root context.Context) {
 			builder := prcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PromptResponseMutation)
 				if !ok {

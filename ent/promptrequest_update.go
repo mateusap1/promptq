@@ -6,10 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
@@ -29,15 +31,15 @@ func (pru *PromptRequestUpdate) Where(ps ...predicate.PromptRequest) *PromptRequ
 }
 
 // SetIdentifier sets the "identifier" field.
-func (pru *PromptRequestUpdate) SetIdentifier(s string) *PromptRequestUpdate {
-	pru.mutation.SetIdentifier(s)
+func (pru *PromptRequestUpdate) SetIdentifier(u uuid.UUID) *PromptRequestUpdate {
+	pru.mutation.SetIdentifier(u)
 	return pru
 }
 
 // SetNillableIdentifier sets the "identifier" field if the given value is not nil.
-func (pru *PromptRequestUpdate) SetNillableIdentifier(s *string) *PromptRequestUpdate {
-	if s != nil {
-		pru.SetIdentifier(*s)
+func (pru *PromptRequestUpdate) SetNillableIdentifier(u *uuid.UUID) *PromptRequestUpdate {
+	if u != nil {
+		pru.SetIdentifier(*u)
 	}
 	return pru
 }
@@ -66,6 +68,34 @@ func (pru *PromptRequestUpdate) SetIsQueued(b bool) *PromptRequestUpdate {
 func (pru *PromptRequestUpdate) SetNillableIsQueued(b *bool) *PromptRequestUpdate {
 	if b != nil {
 		pru.SetIsQueued(*b)
+	}
+	return pru
+}
+
+// SetIsAnswered sets the "is_answered" field.
+func (pru *PromptRequestUpdate) SetIsAnswered(b bool) *PromptRequestUpdate {
+	pru.mutation.SetIsAnswered(b)
+	return pru
+}
+
+// SetNillableIsAnswered sets the "is_answered" field if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillableIsAnswered(b *bool) *PromptRequestUpdate {
+	if b != nil {
+		pru.SetIsAnswered(*b)
+	}
+	return pru
+}
+
+// SetCreateDate sets the "create_date" field.
+func (pru *PromptRequestUpdate) SetCreateDate(t time.Time) *PromptRequestUpdate {
+	pru.mutation.SetCreateDate(t)
+	return pru
+}
+
+// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillableCreateDate(t *time.Time) *PromptRequestUpdate {
+	if t != nil {
+		pru.SetCreateDate(*t)
 	}
 	return pru
 }
@@ -137,13 +167,19 @@ func (pru *PromptRequestUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 	}
 	if value, ok := pru.mutation.Identifier(); ok {
-		_spec.SetField(promptrequest.FieldIdentifier, field.TypeString, value)
+		_spec.SetField(promptrequest.FieldIdentifier, field.TypeUUID, value)
 	}
 	if value, ok := pru.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
 	if value, ok := pru.mutation.IsQueued(); ok {
 		_spec.SetField(promptrequest.FieldIsQueued, field.TypeBool, value)
+	}
+	if value, ok := pru.mutation.IsAnswered(); ok {
+		_spec.SetField(promptrequest.FieldIsAnswered, field.TypeBool, value)
+	}
+	if value, ok := pru.mutation.CreateDate(); ok {
+		_spec.SetField(promptrequest.FieldCreateDate, field.TypeTime, value)
 	}
 	if pru.mutation.PromptResponseCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -195,15 +231,15 @@ type PromptRequestUpdateOne struct {
 }
 
 // SetIdentifier sets the "identifier" field.
-func (pruo *PromptRequestUpdateOne) SetIdentifier(s string) *PromptRequestUpdateOne {
-	pruo.mutation.SetIdentifier(s)
+func (pruo *PromptRequestUpdateOne) SetIdentifier(u uuid.UUID) *PromptRequestUpdateOne {
+	pruo.mutation.SetIdentifier(u)
 	return pruo
 }
 
 // SetNillableIdentifier sets the "identifier" field if the given value is not nil.
-func (pruo *PromptRequestUpdateOne) SetNillableIdentifier(s *string) *PromptRequestUpdateOne {
-	if s != nil {
-		pruo.SetIdentifier(*s)
+func (pruo *PromptRequestUpdateOne) SetNillableIdentifier(u *uuid.UUID) *PromptRequestUpdateOne {
+	if u != nil {
+		pruo.SetIdentifier(*u)
 	}
 	return pruo
 }
@@ -232,6 +268,34 @@ func (pruo *PromptRequestUpdateOne) SetIsQueued(b bool) *PromptRequestUpdateOne 
 func (pruo *PromptRequestUpdateOne) SetNillableIsQueued(b *bool) *PromptRequestUpdateOne {
 	if b != nil {
 		pruo.SetIsQueued(*b)
+	}
+	return pruo
+}
+
+// SetIsAnswered sets the "is_answered" field.
+func (pruo *PromptRequestUpdateOne) SetIsAnswered(b bool) *PromptRequestUpdateOne {
+	pruo.mutation.SetIsAnswered(b)
+	return pruo
+}
+
+// SetNillableIsAnswered sets the "is_answered" field if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillableIsAnswered(b *bool) *PromptRequestUpdateOne {
+	if b != nil {
+		pruo.SetIsAnswered(*b)
+	}
+	return pruo
+}
+
+// SetCreateDate sets the "create_date" field.
+func (pruo *PromptRequestUpdateOne) SetCreateDate(t time.Time) *PromptRequestUpdateOne {
+	pruo.mutation.SetCreateDate(t)
+	return pruo
+}
+
+// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillableCreateDate(t *time.Time) *PromptRequestUpdateOne {
+	if t != nil {
+		pruo.SetCreateDate(*t)
 	}
 	return pruo
 }
@@ -333,13 +397,19 @@ func (pruo *PromptRequestUpdateOne) sqlSave(ctx context.Context) (_node *PromptR
 		}
 	}
 	if value, ok := pruo.mutation.Identifier(); ok {
-		_spec.SetField(promptrequest.FieldIdentifier, field.TypeString, value)
+		_spec.SetField(promptrequest.FieldIdentifier, field.TypeUUID, value)
 	}
 	if value, ok := pruo.mutation.Prompt(); ok {
 		_spec.SetField(promptrequest.FieldPrompt, field.TypeString, value)
 	}
 	if value, ok := pruo.mutation.IsQueued(); ok {
 		_spec.SetField(promptrequest.FieldIsQueued, field.TypeBool, value)
+	}
+	if value, ok := pruo.mutation.IsAnswered(); ok {
+		_spec.SetField(promptrequest.FieldIsAnswered, field.TypeBool, value)
+	}
+	if value, ok := pruo.mutation.CreateDate(); ok {
+		_spec.SetField(promptrequest.FieldCreateDate, field.TypeTime, value)
 	}
 	if pruo.mutation.PromptResponseCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -3,8 +3,11 @@
 package promptrequest
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/predicate"
 )
 
@@ -54,7 +57,7 @@ func IDLTE(id int) predicate.PromptRequest {
 }
 
 // Identifier applies equality check predicate on the "identifier" field. It's identical to IdentifierEQ.
-func Identifier(v string) predicate.PromptRequest {
+func Identifier(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldIdentifier, v))
 }
 
@@ -68,69 +71,54 @@ func IsQueued(v bool) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldIsQueued, v))
 }
 
+// IsAnswered applies equality check predicate on the "is_answered" field. It's identical to IsAnsweredEQ.
+func IsAnswered(v bool) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldIsAnswered, v))
+}
+
+// CreateDate applies equality check predicate on the "create_date" field. It's identical to CreateDateEQ.
+func CreateDate(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldCreateDate, v))
+}
+
 // IdentifierEQ applies the EQ predicate on the "identifier" field.
-func IdentifierEQ(v string) predicate.PromptRequest {
+func IdentifierEQ(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldEQ(FieldIdentifier, v))
 }
 
 // IdentifierNEQ applies the NEQ predicate on the "identifier" field.
-func IdentifierNEQ(v string) predicate.PromptRequest {
+func IdentifierNEQ(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldNEQ(FieldIdentifier, v))
 }
 
 // IdentifierIn applies the In predicate on the "identifier" field.
-func IdentifierIn(vs ...string) predicate.PromptRequest {
+func IdentifierIn(vs ...uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldIn(FieldIdentifier, vs...))
 }
 
 // IdentifierNotIn applies the NotIn predicate on the "identifier" field.
-func IdentifierNotIn(vs ...string) predicate.PromptRequest {
+func IdentifierNotIn(vs ...uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldNotIn(FieldIdentifier, vs...))
 }
 
 // IdentifierGT applies the GT predicate on the "identifier" field.
-func IdentifierGT(v string) predicate.PromptRequest {
+func IdentifierGT(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldGT(FieldIdentifier, v))
 }
 
 // IdentifierGTE applies the GTE predicate on the "identifier" field.
-func IdentifierGTE(v string) predicate.PromptRequest {
+func IdentifierGTE(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldGTE(FieldIdentifier, v))
 }
 
 // IdentifierLT applies the LT predicate on the "identifier" field.
-func IdentifierLT(v string) predicate.PromptRequest {
+func IdentifierLT(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldLT(FieldIdentifier, v))
 }
 
 // IdentifierLTE applies the LTE predicate on the "identifier" field.
-func IdentifierLTE(v string) predicate.PromptRequest {
+func IdentifierLTE(v uuid.UUID) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldLTE(FieldIdentifier, v))
-}
-
-// IdentifierContains applies the Contains predicate on the "identifier" field.
-func IdentifierContains(v string) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldContains(FieldIdentifier, v))
-}
-
-// IdentifierHasPrefix applies the HasPrefix predicate on the "identifier" field.
-func IdentifierHasPrefix(v string) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldHasPrefix(FieldIdentifier, v))
-}
-
-// IdentifierHasSuffix applies the HasSuffix predicate on the "identifier" field.
-func IdentifierHasSuffix(v string) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldHasSuffix(FieldIdentifier, v))
-}
-
-// IdentifierEqualFold applies the EqualFold predicate on the "identifier" field.
-func IdentifierEqualFold(v string) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldEqualFold(FieldIdentifier, v))
-}
-
-// IdentifierContainsFold applies the ContainsFold predicate on the "identifier" field.
-func IdentifierContainsFold(v string) predicate.PromptRequest {
-	return predicate.PromptRequest(sql.FieldContainsFold(FieldIdentifier, v))
 }
 
 // PromptEQ applies the EQ predicate on the "prompt" field.
@@ -206,6 +194,56 @@ func IsQueuedEQ(v bool) predicate.PromptRequest {
 // IsQueuedNEQ applies the NEQ predicate on the "is_queued" field.
 func IsQueuedNEQ(v bool) predicate.PromptRequest {
 	return predicate.PromptRequest(sql.FieldNEQ(FieldIsQueued, v))
+}
+
+// IsAnsweredEQ applies the EQ predicate on the "is_answered" field.
+func IsAnsweredEQ(v bool) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldIsAnswered, v))
+}
+
+// IsAnsweredNEQ applies the NEQ predicate on the "is_answered" field.
+func IsAnsweredNEQ(v bool) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldNEQ(FieldIsAnswered, v))
+}
+
+// CreateDateEQ applies the EQ predicate on the "create_date" field.
+func CreateDateEQ(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldEQ(FieldCreateDate, v))
+}
+
+// CreateDateNEQ applies the NEQ predicate on the "create_date" field.
+func CreateDateNEQ(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldNEQ(FieldCreateDate, v))
+}
+
+// CreateDateIn applies the In predicate on the "create_date" field.
+func CreateDateIn(vs ...time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldIn(FieldCreateDate, vs...))
+}
+
+// CreateDateNotIn applies the NotIn predicate on the "create_date" field.
+func CreateDateNotIn(vs ...time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldNotIn(FieldCreateDate, vs...))
+}
+
+// CreateDateGT applies the GT predicate on the "create_date" field.
+func CreateDateGT(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldGT(FieldCreateDate, v))
+}
+
+// CreateDateGTE applies the GTE predicate on the "create_date" field.
+func CreateDateGTE(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldGTE(FieldCreateDate, v))
+}
+
+// CreateDateLT applies the LT predicate on the "create_date" field.
+func CreateDateLT(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldLT(FieldCreateDate, v))
+}
+
+// CreateDateLTE applies the LTE predicate on the "create_date" field.
+func CreateDateLTE(v time.Time) predicate.PromptRequest {
+	return predicate.PromptRequest(sql.FieldLTE(FieldCreateDate, v))
 }
 
 // HasPromptResponse applies the HasEdge predicate on the "prompt_response" edge.

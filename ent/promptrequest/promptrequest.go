@@ -3,8 +3,11 @@
 package promptrequest
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -18,6 +21,10 @@ const (
 	FieldPrompt = "prompt"
 	// FieldIsQueued holds the string denoting the is_queued field in the database.
 	FieldIsQueued = "is_queued"
+	// FieldIsAnswered holds the string denoting the is_answered field in the database.
+	FieldIsAnswered = "is_answered"
+	// FieldCreateDate holds the string denoting the create_date field in the database.
+	FieldCreateDate = "create_date"
 	// EdgePromptResponse holds the string denoting the prompt_response edge name in mutations.
 	EdgePromptResponse = "prompt_response"
 	// Table holds the table name of the promptrequest in the database.
@@ -37,6 +44,8 @@ var Columns = []string{
 	FieldIdentifier,
 	FieldPrompt,
 	FieldIsQueued,
+	FieldIsAnswered,
+	FieldCreateDate,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -51,9 +60,13 @@ func ValidColumn(column string) bool {
 
 var (
 	// DefaultIdentifier holds the default value on creation for the "identifier" field.
-	DefaultIdentifier func() string
+	DefaultIdentifier func() uuid.UUID
 	// DefaultIsQueued holds the default value on creation for the "is_queued" field.
 	DefaultIsQueued bool
+	// DefaultIsAnswered holds the default value on creation for the "is_answered" field.
+	DefaultIsAnswered bool
+	// DefaultCreateDate holds the default value on creation for the "create_date" field.
+	DefaultCreateDate func() time.Time
 )
 
 // OrderOption defines the ordering options for the PromptRequest queries.
@@ -77,6 +90,16 @@ func ByPrompt(opts ...sql.OrderTermOption) OrderOption {
 // ByIsQueued orders the results by the is_queued field.
 func ByIsQueued(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsQueued, opts...).ToFunc()
+}
+
+// ByIsAnswered orders the results by the is_answered field.
+func ByIsAnswered(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsAnswered, opts...).ToFunc()
+}
+
+// ByCreateDate orders the results by the create_date field.
+func ByCreateDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreateDate, opts...).ToFunc()
 }
 
 // ByPromptResponseField orders the results by prompt_response field.

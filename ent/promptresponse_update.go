@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -38,6 +39,20 @@ func (pru *PromptResponseUpdate) SetResponse(s string) *PromptResponseUpdate {
 func (pru *PromptResponseUpdate) SetNillableResponse(s *string) *PromptResponseUpdate {
 	if s != nil {
 		pru.SetResponse(*s)
+	}
+	return pru
+}
+
+// SetCreateDate sets the "create_date" field.
+func (pru *PromptResponseUpdate) SetCreateDate(t time.Time) *PromptResponseUpdate {
+	pru.mutation.SetCreateDate(t)
+	return pru
+}
+
+// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
+func (pru *PromptResponseUpdate) SetNillableCreateDate(t *time.Time) *PromptResponseUpdate {
+	if t != nil {
+		pru.SetCreateDate(*t)
 	}
 	return pru
 }
@@ -114,6 +129,9 @@ func (pru *PromptResponseUpdate) sqlSave(ctx context.Context) (n int, err error)
 	if value, ok := pru.mutation.Response(); ok {
 		_spec.SetField(promptresponse.FieldResponse, field.TypeString, value)
 	}
+	if value, ok := pru.mutation.CreateDate(); ok {
+		_spec.SetField(promptresponse.FieldCreateDate, field.TypeTime, value)
+	}
 	if pru.mutation.PromptRequestCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -173,6 +191,20 @@ func (pruo *PromptResponseUpdateOne) SetResponse(s string) *PromptResponseUpdate
 func (pruo *PromptResponseUpdateOne) SetNillableResponse(s *string) *PromptResponseUpdateOne {
 	if s != nil {
 		pruo.SetResponse(*s)
+	}
+	return pruo
+}
+
+// SetCreateDate sets the "create_date" field.
+func (pruo *PromptResponseUpdateOne) SetCreateDate(t time.Time) *PromptResponseUpdateOne {
+	pruo.mutation.SetCreateDate(t)
+	return pruo
+}
+
+// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
+func (pruo *PromptResponseUpdateOne) SetNillableCreateDate(t *time.Time) *PromptResponseUpdateOne {
+	if t != nil {
+		pruo.SetCreateDate(*t)
 	}
 	return pruo
 }
@@ -278,6 +310,9 @@ func (pruo *PromptResponseUpdateOne) sqlSave(ctx context.Context) (_node *Prompt
 	}
 	if value, ok := pruo.mutation.Response(); ok {
 		_spec.SetField(promptresponse.FieldResponse, field.TypeString, value)
+	}
+	if value, ok := pruo.mutation.CreateDate(); ok {
+		_spec.SetField(promptresponse.FieldCreateDate, field.TypeTime, value)
 	}
 	if pruo.mutation.PromptRequestCleared() {
 		edge := &sqlgraph.EdgeSpec{

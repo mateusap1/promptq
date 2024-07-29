@@ -5,9 +5,11 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
@@ -18,11 +20,15 @@ type PromptRequest struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Identifier holds the value of the "identifier" field.
-	Identifier string `json:"identifier,omitempty"`
+	Identifier uuid.UUID `json:"identifier,omitempty"`
 	// Prompt holds the value of the "prompt" field.
 	Prompt string `json:"prompt,omitempty"`
 	// IsQueued holds the value of the "is_queued" field.
 	IsQueued bool `json:"is_queued,omitempty"`
+	// IsAnswered holds the value of the "is_answered" field.
+	IsAnswered bool `json:"is_answered,omitempty"`
+	// CreateDate holds the value of the "create_date" field.
+	CreateDate time.Time `json:"create_date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PromptRequestQuery when eager-loading is set.
 	Edges        PromptRequestEdges `json:"edges"`
@@ -54,12 +60,16 @@ func (*PromptRequest) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case promptrequest.FieldIsQueued:
+		case promptrequest.FieldIsQueued, promptrequest.FieldIsAnswered:
 			values[i] = new(sql.NullBool)
 		case promptrequest.FieldID:
 			values[i] = new(sql.NullInt64)
-		case promptrequest.FieldIdentifier, promptrequest.FieldPrompt:
+		case promptrequest.FieldPrompt:
 			values[i] = new(sql.NullString)
+		case promptrequest.FieldCreateDate:
+			values[i] = new(sql.NullTime)
+		case promptrequest.FieldIdentifier:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -82,10 +92,10 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 			}
 			pr.ID = int(value.Int64)
 		case promptrequest.FieldIdentifier:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field identifier", values[i])
-			} else if value.Valid {
-				pr.Identifier = value.String
+			} else if value != nil {
+				pr.Identifier = *value
 			}
 		case promptrequest.FieldPrompt:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -98,6 +108,18 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_queued", values[i])
 			} else if value.Valid {
 				pr.IsQueued = value.Bool
+			}
+		case promptrequest.FieldIsAnswered:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_answered", values[i])
+			} else if value.Valid {
+				pr.IsAnswered = value.Bool
+			}
+		case promptrequest.FieldCreateDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_date", values[i])
+			} else if value.Valid {
+				pr.CreateDate = value.Time
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -141,13 +163,19 @@ func (pr *PromptRequest) String() string {
 	builder.WriteString("PromptRequest(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
 	builder.WriteString("identifier=")
-	builder.WriteString(pr.Identifier)
+	builder.WriteString(fmt.Sprintf("%v", pr.Identifier))
 	builder.WriteString(", ")
 	builder.WriteString("prompt=")
 	builder.WriteString(pr.Prompt)
 	builder.WriteString(", ")
 	builder.WriteString("is_queued=")
 	builder.WriteString(fmt.Sprintf("%v", pr.IsQueued))
+	builder.WriteString(", ")
+	builder.WriteString("is_answered=")
+	builder.WriteString(fmt.Sprintf("%v", pr.IsAnswered))
+	builder.WriteString(", ")
+	builder.WriteString("create_date=")
+	builder.WriteString(pr.CreateDate.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

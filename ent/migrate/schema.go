@@ -11,9 +11,11 @@ var (
 	// PromptRequestsColumns holds the columns for the "prompt_requests" table.
 	PromptRequestsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "identifier", Type: field.TypeString, Unique: true},
+		{Name: "identifier", Type: field.TypeUUID, Unique: true},
 		{Name: "prompt", Type: field.TypeString},
 		{Name: "is_queued", Type: field.TypeBool, Default: false},
+		{Name: "is_answered", Type: field.TypeBool, Default: false},
+		{Name: "create_date", Type: field.TypeTime},
 	}
 	// PromptRequestsTable holds the schema information for the "prompt_requests" table.
 	PromptRequestsTable = &schema.Table{
@@ -25,6 +27,7 @@ var (
 	PromptResponsesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "response", Type: field.TypeString},
+		{Name: "create_date", Type: field.TypeTime},
 		{Name: "prompt_request_prompt_response", Type: field.TypeInt, Unique: true},
 	}
 	// PromptResponsesTable holds the schema information for the "prompt_responses" table.
@@ -35,7 +38,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "prompt_responses_prompt_requests_prompt_response",
-				Columns:    []*schema.Column{PromptResponsesColumns[2]},
+				Columns:    []*schema.Column{PromptResponsesColumns[3]},
 				RefColumns: []*schema.Column{PromptRequestsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

@@ -3,6 +3,8 @@
 package promptresponse
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -14,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldResponse holds the string denoting the response field in the database.
 	FieldResponse = "response"
+	// FieldCreateDate holds the string denoting the create_date field in the database.
+	FieldCreateDate = "create_date"
 	// EdgePromptRequest holds the string denoting the prompt_request edge name in mutations.
 	EdgePromptRequest = "prompt_request"
 	// Table holds the table name of the promptresponse in the database.
@@ -31,6 +35,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldResponse,
+	FieldCreateDate,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "prompt_responses"
@@ -54,6 +59,11 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// DefaultCreateDate holds the default value on creation for the "create_date" field.
+	DefaultCreateDate func() time.Time
+)
+
 // OrderOption defines the ordering options for the PromptResponse queries.
 type OrderOption func(*sql.Selector)
 
@@ -65,6 +75,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByResponse orders the results by the response field.
 func ByResponse(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldResponse, opts...).ToFunc()
+}
+
+// ByCreateDate orders the results by the create_date field.
+func ByCreateDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreateDate, opts...).ToFunc()
 }
 
 // ByPromptRequestField orders the results by prompt_request field.

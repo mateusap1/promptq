@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
@@ -34,9 +36,11 @@ type PromptRequestMutation struct {
 	op                     Op
 	typ                    string
 	id                     *int
-	identifier             *string
+	identifier             *uuid.UUID
 	prompt                 *string
 	is_queued              *bool
+	is_answered            *bool
+	create_date            *time.Time
 	clearedFields          map[string]struct{}
 	prompt_response        *int
 	clearedprompt_response bool
@@ -144,12 +148,12 @@ func (m *PromptRequestMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetIdentifier sets the "identifier" field.
-func (m *PromptRequestMutation) SetIdentifier(s string) {
-	m.identifier = &s
+func (m *PromptRequestMutation) SetIdentifier(u uuid.UUID) {
+	m.identifier = &u
 }
 
 // Identifier returns the value of the "identifier" field in the mutation.
-func (m *PromptRequestMutation) Identifier() (r string, exists bool) {
+func (m *PromptRequestMutation) Identifier() (r uuid.UUID, exists bool) {
 	v := m.identifier
 	if v == nil {
 		return
@@ -160,7 +164,7 @@ func (m *PromptRequestMutation) Identifier() (r string, exists bool) {
 // OldIdentifier returns the old "identifier" field's value of the PromptRequest entity.
 // If the PromptRequest object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PromptRequestMutation) OldIdentifier(ctx context.Context) (v string, err error) {
+func (m *PromptRequestMutation) OldIdentifier(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIdentifier is only allowed on UpdateOne operations")
 	}
@@ -251,6 +255,78 @@ func (m *PromptRequestMutation) ResetIsQueued() {
 	m.is_queued = nil
 }
 
+// SetIsAnswered sets the "is_answered" field.
+func (m *PromptRequestMutation) SetIsAnswered(b bool) {
+	m.is_answered = &b
+}
+
+// IsAnswered returns the value of the "is_answered" field in the mutation.
+func (m *PromptRequestMutation) IsAnswered() (r bool, exists bool) {
+	v := m.is_answered
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsAnswered returns the old "is_answered" field's value of the PromptRequest entity.
+// If the PromptRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromptRequestMutation) OldIsAnswered(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsAnswered is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsAnswered requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsAnswered: %w", err)
+	}
+	return oldValue.IsAnswered, nil
+}
+
+// ResetIsAnswered resets all changes to the "is_answered" field.
+func (m *PromptRequestMutation) ResetIsAnswered() {
+	m.is_answered = nil
+}
+
+// SetCreateDate sets the "create_date" field.
+func (m *PromptRequestMutation) SetCreateDate(t time.Time) {
+	m.create_date = &t
+}
+
+// CreateDate returns the value of the "create_date" field in the mutation.
+func (m *PromptRequestMutation) CreateDate() (r time.Time, exists bool) {
+	v := m.create_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateDate returns the old "create_date" field's value of the PromptRequest entity.
+// If the PromptRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromptRequestMutation) OldCreateDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateDate: %w", err)
+	}
+	return oldValue.CreateDate, nil
+}
+
+// ResetCreateDate resets all changes to the "create_date" field.
+func (m *PromptRequestMutation) ResetCreateDate() {
+	m.create_date = nil
+}
+
 // SetPromptResponseID sets the "prompt_response" edge to the PromptResponse entity by id.
 func (m *PromptRequestMutation) SetPromptResponseID(id int) {
 	m.prompt_response = &id
@@ -324,7 +400,7 @@ func (m *PromptRequestMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PromptRequestMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.identifier != nil {
 		fields = append(fields, promptrequest.FieldIdentifier)
 	}
@@ -333,6 +409,12 @@ func (m *PromptRequestMutation) Fields() []string {
 	}
 	if m.is_queued != nil {
 		fields = append(fields, promptrequest.FieldIsQueued)
+	}
+	if m.is_answered != nil {
+		fields = append(fields, promptrequest.FieldIsAnswered)
+	}
+	if m.create_date != nil {
+		fields = append(fields, promptrequest.FieldCreateDate)
 	}
 	return fields
 }
@@ -348,6 +430,10 @@ func (m *PromptRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.Prompt()
 	case promptrequest.FieldIsQueued:
 		return m.IsQueued()
+	case promptrequest.FieldIsAnswered:
+		return m.IsAnswered()
+	case promptrequest.FieldCreateDate:
+		return m.CreateDate()
 	}
 	return nil, false
 }
@@ -363,6 +449,10 @@ func (m *PromptRequestMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldPrompt(ctx)
 	case promptrequest.FieldIsQueued:
 		return m.OldIsQueued(ctx)
+	case promptrequest.FieldIsAnswered:
+		return m.OldIsAnswered(ctx)
+	case promptrequest.FieldCreateDate:
+		return m.OldCreateDate(ctx)
 	}
 	return nil, fmt.Errorf("unknown PromptRequest field %s", name)
 }
@@ -373,7 +463,7 @@ func (m *PromptRequestMutation) OldField(ctx context.Context, name string) (ent.
 func (m *PromptRequestMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case promptrequest.FieldIdentifier:
-		v, ok := value.(string)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -392,6 +482,20 @@ func (m *PromptRequestMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsQueued(v)
+		return nil
+	case promptrequest.FieldIsAnswered:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsAnswered(v)
+		return nil
+	case promptrequest.FieldCreateDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateDate(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest field %s", name)
@@ -450,6 +554,12 @@ func (m *PromptRequestMutation) ResetField(name string) error {
 		return nil
 	case promptrequest.FieldIsQueued:
 		m.ResetIsQueued()
+		return nil
+	case promptrequest.FieldIsAnswered:
+		m.ResetIsAnswered()
+		return nil
+	case promptrequest.FieldCreateDate:
+		m.ResetCreateDate()
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest field %s", name)
@@ -536,6 +646,7 @@ type PromptResponseMutation struct {
 	typ                   string
 	id                    *int
 	response              *string
+	create_date           *time.Time
 	clearedFields         map[string]struct{}
 	prompt_request        *int
 	clearedprompt_request bool
@@ -678,6 +789,42 @@ func (m *PromptResponseMutation) ResetResponse() {
 	m.response = nil
 }
 
+// SetCreateDate sets the "create_date" field.
+func (m *PromptResponseMutation) SetCreateDate(t time.Time) {
+	m.create_date = &t
+}
+
+// CreateDate returns the value of the "create_date" field in the mutation.
+func (m *PromptResponseMutation) CreateDate() (r time.Time, exists bool) {
+	v := m.create_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateDate returns the old "create_date" field's value of the PromptResponse entity.
+// If the PromptResponse object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromptResponseMutation) OldCreateDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateDate: %w", err)
+	}
+	return oldValue.CreateDate, nil
+}
+
+// ResetCreateDate resets all changes to the "create_date" field.
+func (m *PromptResponseMutation) ResetCreateDate() {
+	m.create_date = nil
+}
+
 // SetPromptRequestID sets the "prompt_request" edge to the PromptRequest entity by id.
 func (m *PromptResponseMutation) SetPromptRequestID(id int) {
 	m.prompt_request = &id
@@ -751,9 +898,12 @@ func (m *PromptResponseMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PromptResponseMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.response != nil {
 		fields = append(fields, promptresponse.FieldResponse)
+	}
+	if m.create_date != nil {
+		fields = append(fields, promptresponse.FieldCreateDate)
 	}
 	return fields
 }
@@ -765,6 +915,8 @@ func (m *PromptResponseMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case promptresponse.FieldResponse:
 		return m.Response()
+	case promptresponse.FieldCreateDate:
+		return m.CreateDate()
 	}
 	return nil, false
 }
@@ -776,6 +928,8 @@ func (m *PromptResponseMutation) OldField(ctx context.Context, name string) (ent
 	switch name {
 	case promptresponse.FieldResponse:
 		return m.OldResponse(ctx)
+	case promptresponse.FieldCreateDate:
+		return m.OldCreateDate(ctx)
 	}
 	return nil, fmt.Errorf("unknown PromptResponse field %s", name)
 }
@@ -791,6 +945,13 @@ func (m *PromptResponseMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetResponse(v)
+		return nil
+	case promptresponse.FieldCreateDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateDate(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PromptResponse field %s", name)
@@ -843,6 +1004,9 @@ func (m *PromptResponseMutation) ResetField(name string) error {
 	switch name {
 	case promptresponse.FieldResponse:
 		m.ResetResponse()
+		return nil
+	case promptresponse.FieldCreateDate:
+		m.ResetCreateDate()
 		return nil
 	}
 	return fmt.Errorf("unknown PromptResponse field %s", name)

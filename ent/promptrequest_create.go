@@ -6,9 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 )
@@ -21,15 +23,15 @@ type PromptRequestCreate struct {
 }
 
 // SetIdentifier sets the "identifier" field.
-func (prc *PromptRequestCreate) SetIdentifier(s string) *PromptRequestCreate {
-	prc.mutation.SetIdentifier(s)
+func (prc *PromptRequestCreate) SetIdentifier(u uuid.UUID) *PromptRequestCreate {
+	prc.mutation.SetIdentifier(u)
 	return prc
 }
 
 // SetNillableIdentifier sets the "identifier" field if the given value is not nil.
-func (prc *PromptRequestCreate) SetNillableIdentifier(s *string) *PromptRequestCreate {
-	if s != nil {
-		prc.SetIdentifier(*s)
+func (prc *PromptRequestCreate) SetNillableIdentifier(u *uuid.UUID) *PromptRequestCreate {
+	if u != nil {
+		prc.SetIdentifier(*u)
 	}
 	return prc
 }
@@ -50,6 +52,34 @@ func (prc *PromptRequestCreate) SetIsQueued(b bool) *PromptRequestCreate {
 func (prc *PromptRequestCreate) SetNillableIsQueued(b *bool) *PromptRequestCreate {
 	if b != nil {
 		prc.SetIsQueued(*b)
+	}
+	return prc
+}
+
+// SetIsAnswered sets the "is_answered" field.
+func (prc *PromptRequestCreate) SetIsAnswered(b bool) *PromptRequestCreate {
+	prc.mutation.SetIsAnswered(b)
+	return prc
+}
+
+// SetNillableIsAnswered sets the "is_answered" field if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableIsAnswered(b *bool) *PromptRequestCreate {
+	if b != nil {
+		prc.SetIsAnswered(*b)
+	}
+	return prc
+}
+
+// SetCreateDate sets the "create_date" field.
+func (prc *PromptRequestCreate) SetCreateDate(t time.Time) *PromptRequestCreate {
+	prc.mutation.SetCreateDate(t)
+	return prc
+}
+
+// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableCreateDate(t *time.Time) *PromptRequestCreate {
+	if t != nil {
+		prc.SetCreateDate(*t)
 	}
 	return prc
 }
@@ -116,6 +146,14 @@ func (prc *PromptRequestCreate) defaults() {
 		v := promptrequest.DefaultIsQueued
 		prc.mutation.SetIsQueued(v)
 	}
+	if _, ok := prc.mutation.IsAnswered(); !ok {
+		v := promptrequest.DefaultIsAnswered
+		prc.mutation.SetIsAnswered(v)
+	}
+	if _, ok := prc.mutation.CreateDate(); !ok {
+		v := promptrequest.DefaultCreateDate()
+		prc.mutation.SetCreateDate(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -128,6 +166,12 @@ func (prc *PromptRequestCreate) check() error {
 	}
 	if _, ok := prc.mutation.IsQueued(); !ok {
 		return &ValidationError{Name: "is_queued", err: errors.New(`ent: missing required field "PromptRequest.is_queued"`)}
+	}
+	if _, ok := prc.mutation.IsAnswered(); !ok {
+		return &ValidationError{Name: "is_answered", err: errors.New(`ent: missing required field "PromptRequest.is_answered"`)}
+	}
+	if _, ok := prc.mutation.CreateDate(); !ok {
+		return &ValidationError{Name: "create_date", err: errors.New(`ent: missing required field "PromptRequest.create_date"`)}
 	}
 	return nil
 }
@@ -156,7 +200,7 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 		_spec = sqlgraph.NewCreateSpec(promptrequest.Table, sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt))
 	)
 	if value, ok := prc.mutation.Identifier(); ok {
-		_spec.SetField(promptrequest.FieldIdentifier, field.TypeString, value)
+		_spec.SetField(promptrequest.FieldIdentifier, field.TypeUUID, value)
 		_node.Identifier = value
 	}
 	if value, ok := prc.mutation.Prompt(); ok {
@@ -166,6 +210,14 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 	if value, ok := prc.mutation.IsQueued(); ok {
 		_spec.SetField(promptrequest.FieldIsQueued, field.TypeBool, value)
 		_node.IsQueued = value
+	}
+	if value, ok := prc.mutation.IsAnswered(); ok {
+		_spec.SetField(promptrequest.FieldIsAnswered, field.TypeBool, value)
+		_node.IsAnswered = value
+	}
+	if value, ok := prc.mutation.CreateDate(); ok {
+		_spec.SetField(promptrequest.FieldCreateDate, field.TypeTime, value)
+		_node.CreateDate = value
 	}
 	if nodes := prc.mutation.PromptResponseIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

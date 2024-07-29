@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -12,17 +14,14 @@ type PromptRequest struct {
 	ent.Schema
 }
 
-func newUUID() string {
-	result := uuid.New()
-	return result.String()
-}
-
 // Fields of the PromptRequest.
 func (PromptRequest) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("identifier").DefaultFunc(newUUID).Unique(),
+		field.UUID("identifier", uuid.UUID{}).Default(uuid.New).Unique(),
 		field.String("prompt"),
 		field.Bool("is_queued").Default(false),
+		field.Bool("is_answered").Default(false),
+		field.Time("create_date").Default(time.Now),
 	}
 }
 

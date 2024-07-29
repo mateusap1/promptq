@@ -298,7 +298,7 @@ func (prq *PromptRequestQuery) WithPromptResponse(opts ...func(*PromptResponseQu
 // Example:
 //
 //	var v []struct {
-//		Identifier string `json:"identifier,omitempty"`
+//		Identifier uuid.UUID `json:"identifier,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -321,7 +321,7 @@ func (prq *PromptRequestQuery) GroupBy(field string, fields ...string) *PromptRe
 // Example:
 //
 //	var v []struct {
-//		Identifier string `json:"identifier,omitempty"`
+//		Identifier uuid.UUID `json:"identifier,omitempty"`
 //	}
 //
 //	client.PromptRequest.Query().

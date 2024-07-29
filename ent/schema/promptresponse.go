@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -15,6 +17,7 @@ type PromptResponse struct {
 func (PromptResponse) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("response"),
+		field.Time("create_date").Default(time.Now),
 	}
 }
 
