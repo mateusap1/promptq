@@ -15,14 +15,15 @@ type PromptResponse struct {
 	Response string
 }
 
-type PeekPromptResponse = PromptResponse
-type DeQueuePromptResponse = PromptResponse
-type RespondPromptResponse = PromptResponse
-
 type CreatePromptRequest struct {
 	Prompt string
 }
 
 type QueuePromptRequest struct {
 	Auth string
+}
+
+type RespondPromptRequest struct {
+	Auth     string
+	Response string
 }
