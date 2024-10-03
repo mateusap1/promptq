@@ -37,3 +37,17 @@ type CreateUserResponse struct {
 	UserName string
 	ApiKey   string
 }
+
+type GetPromptsRequest struct {
+	ApiKey string
+}
+
+type PromptRequestResponse struct {
+	Identifier string
+	Prompt     string
+	State      string
+}
+
+type GetPromptsRespose struct {
+	responses []PromptRequestResponse
+}

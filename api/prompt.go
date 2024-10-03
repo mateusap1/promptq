@@ -248,3 +248,50 @@ func GetPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		c.IndentedJSON(http.StatusOK, PromptResponse{Prompt: pr.Prompt, State: "awaiting"})
 	}
 }
+
+func GetPrompts(c *gin.Context, ctx context.Context, client *ent.Client) {
+	var promptsForm GetPromptsRequest
+
+	if err := c.BindJSON(&promptsForm); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"Message": "Authentication key not provided.",
+		})
+		return
+	}
+
+	us, err := user.GetUser(ctx, client, promptsForm.ApiKey)
+	if err != nil {
+		fmt.Print(err)
+
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "User authentication error.",
+		})
+		return
+	}
+
+	requests, err := prompt.GetPromptRequests(ctx, client, us)
+	if err != nil {
+		fmt.Print(err)
+
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "Error while trying to get user requests.",
+		})
+		return
+	}
+
+	responses := make([]PromptRequestResponse, len(requests))
+	for i := range requests {
+		pr := requests[i]
+
+		var state string = "awaiting"
+		if pr.IsAnswered {
+			state = "answered"
+		} else if pr.IsQueued {
+			state = "queued"
+		}
+
+		responses[i] = PromptRequestResponse{Identifier: pr.Identifier.String(), Prompt: pr.Prompt, State: state}
+	}
+
+	c.IndentedJSON(http.StatusOK, GetPromptsRespose{responses: responses})
+}
