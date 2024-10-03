@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/mateusap1/promptq/ent"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 func randomStringCrypto(length int) (string, error) {
@@ -38,4 +39,13 @@ func MakeUser(ctx context.Context, client *ent.Client, username string) (*ent.Us
 	log.Println("user was created: ", user)
 
 	return user, nil
+}
+
+func GetUser(ctx context.Context, client *ent.Client, api_key string) (*ent.User, error) {
+	us, err := client.User.Query().Where(user.APIKeyEQ(api_key)).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting latest user: %w", err)
+	}
+
+	return us, nil
 }
