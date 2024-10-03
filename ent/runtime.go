@@ -9,6 +9,7 @@ import (
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 	"github.com/mateusap1/promptq/ent/schema"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -39,4 +40,10 @@ func init() {
 	promptresponseDescCreateDate := promptresponseFields[1].Descriptor()
 	// promptresponse.DefaultCreateDate holds the default value on creation for the create_date field.
 	promptresponse.DefaultCreateDate = promptresponseDescCreateDate.Default.(func() time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescCreateDate is the schema descriptor for create_date field.
+	userDescCreateDate := userFields[2].Descriptor()
+	// user.DefaultCreateDate holds the default value on creation for the create_date field.
+	user.DefaultCreateDate = userDescCreateDate.Default.(func() time.Time)
 }

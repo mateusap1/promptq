@@ -27,3 +27,12 @@ type RespondPromptRequest struct {
 	Auth     string
 	Response string
 }
+
+type CreateUserRequest struct {
+	UserName string
+}
+
+type CreateUserResponse struct {
+	UserName string
+	ApiKey   string
+}

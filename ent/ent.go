@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -76,6 +77,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			promptrequest.Table:  promptrequest.ValidColumn,
 			promptresponse.Table: promptresponse.ValidColumn,
+			user.Table:           user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)
