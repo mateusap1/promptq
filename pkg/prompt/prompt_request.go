@@ -70,3 +70,12 @@ func AnswerPromptRequest(ctx context.Context, client *ent.Client, promptRequest 
 
 	return pr, nil
 }
+
+func GetPromptRequests(ctx context.Context, client *ent.Client, user *ent.User) ([]*ent.PromptRequest, error) {
+	prs, err := user.QueryPromptRequests().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting latest prompt request: %w", err)
+	}
+
+	return prs, nil
+}

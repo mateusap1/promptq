@@ -128,3 +128,45 @@ func TestAnswerPromptRequest(t *testing.T) {
 	assert.Equal(t, pr2.ID, pr3.ID)
 	assert.True(t, pr3.IsAnswered)
 }
+
+func TestGetPromptRequests(t *testing.T) {
+	client, ctx := setupDatabase(t)
+	defer client.Close()
+
+	us, err := client.User.
+		Create().
+		SetUsername("test123").
+		SetAPIKey("secret123").
+		Save(ctx)
+
+	if err != nil {
+		t.Fatalf("failed creating user: %v", err)
+	}
+
+	_, err = client.PromptRequest.
+		Create().
+		SetPrompt("Prompt #1").
+		SetUser(us).
+		Save(ctx)
+
+	if err != nil {
+		t.Fatalf("failed creating prompt request: %v", err)
+	}
+
+	_, err = client.PromptRequest.
+		Create().
+		SetPrompt("Prompt #2").
+		SetUser(us).
+		Save(ctx)
+
+	if err != nil {
+		t.Fatalf("failed creating prompt request: %v", err)
+	}
+
+	t.Run("Get prompts", func(t *testing.T) {
+		prs, err := GetPromptRequests(ctx, client, us)
+
+		assert.Len(t, prs, 2)
+		assert.Nil(t, err)
+	})
+}
