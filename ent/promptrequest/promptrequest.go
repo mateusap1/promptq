@@ -27,6 +27,8 @@ const (
 	FieldCreateDate = "create_date"
 	// EdgePromptResponse holds the string denoting the prompt_response edge name in mutations.
 	EdgePromptResponse = "prompt_response"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the promptrequest in the database.
 	Table = "prompt_requests"
 	// PromptResponseTable is the table that holds the prompt_response relation/edge.
@@ -36,6 +38,13 @@ const (
 	PromptResponseInverseTable = "prompt_responses"
 	// PromptResponseColumn is the table column denoting the prompt_response relation/edge.
 	PromptResponseColumn = "prompt_request_prompt_response"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "prompt_requests"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_prompt_requests"
 )
 
 // Columns holds all SQL columns for promptrequest fields.
@@ -48,10 +57,21 @@ var Columns = []string{
 	FieldCreateDate,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "prompt_requests"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_prompt_requests",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -108,10 +128,24 @@ func ByPromptResponseField(field string, opts ...sql.OrderTermOption) OrderOptio
 		sqlgraph.OrderByNeighborTerms(s, newPromptResponseStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newPromptResponseStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PromptResponseInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, PromptResponseTable, PromptResponseColumn),
+	)
+}
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }

@@ -28,8 +28,18 @@ func TestMakePromptRequest(t *testing.T) {
 	client, ctx := setupDatabase(t)
 	defer client.Close()
 
+	us, err := client.User.
+		Create().
+		SetUsername("test123").
+		SetAPIKey("secret123").
+		Save(ctx)
+
+	if err != nil {
+		t.Fatalf("failed creating user: %v", err)
+	}
+
 	t.Run("Create prompt", func(t *testing.T) {
-		pr, err := MakePromptRequest(ctx, client, "Prompt #1")
+		pr, err := MakePromptRequest(ctx, client, "Prompt #1", us)
 		if err != nil {
 			t.Fatalf("failed creating prompt: %v", err)
 		}

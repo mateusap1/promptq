@@ -46,6 +46,8 @@ type PromptRequestMutation struct {
 	clearedFields          map[string]struct{}
 	prompt_response        *int
 	clearedprompt_response bool
+	user                   *int
+	cleareduser            bool
 	done                   bool
 	oldValue               func(context.Context) (*PromptRequest, error)
 	predicates             []predicate.PromptRequest
@@ -368,6 +370,45 @@ func (m *PromptRequestMutation) ResetPromptResponse() {
 	m.clearedprompt_response = false
 }
 
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *PromptRequestMutation) SetUserID(id int) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *PromptRequestMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *PromptRequestMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *PromptRequestMutation) UserID() (id int, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *PromptRequestMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *PromptRequestMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // Where appends a list predicates to the PromptRequestMutation builder.
 func (m *PromptRequestMutation) Where(ps ...predicate.PromptRequest) {
 	m.predicates = append(m.predicates, ps...)
@@ -569,9 +610,12 @@ func (m *PromptRequestMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PromptRequestMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.prompt_response != nil {
 		edges = append(edges, promptrequest.EdgePromptResponse)
+	}
+	if m.user != nil {
+		edges = append(edges, promptrequest.EdgeUser)
 	}
 	return edges
 }
@@ -584,13 +628,17 @@ func (m *PromptRequestMutation) AddedIDs(name string) []ent.Value {
 		if id := m.prompt_response; id != nil {
 			return []ent.Value{*id}
 		}
+	case promptrequest.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PromptRequestMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -602,9 +650,12 @@ func (m *PromptRequestMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PromptRequestMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedprompt_response {
 		edges = append(edges, promptrequest.EdgePromptResponse)
+	}
+	if m.cleareduser {
+		edges = append(edges, promptrequest.EdgeUser)
 	}
 	return edges
 }
@@ -615,6 +666,8 @@ func (m *PromptRequestMutation) EdgeCleared(name string) bool {
 	switch name {
 	case promptrequest.EdgePromptResponse:
 		return m.clearedprompt_response
+	case promptrequest.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -626,6 +679,9 @@ func (m *PromptRequestMutation) ClearEdge(name string) error {
 	case promptrequest.EdgePromptResponse:
 		m.ClearPromptResponse()
 		return nil
+	case promptrequest.EdgeUser:
+		m.ClearUser()
+		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest unique edge %s", name)
 }
@@ -636,6 +692,9 @@ func (m *PromptRequestMutation) ResetEdge(name string) error {
 	switch name {
 	case promptrequest.EdgePromptResponse:
 		m.ResetPromptResponse()
+		return nil
+	case promptrequest.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown PromptRequest edge %s", name)
@@ -1091,16 +1150,19 @@ func (m *PromptResponseMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	username      *string
-	api_key       *string
-	create_date   *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*User, error)
-	predicates    []predicate.User
+	op                     Op
+	typ                    string
+	id                     *int
+	username               *string
+	api_key                *string
+	create_date            *time.Time
+	clearedFields          map[string]struct{}
+	prompt_requests        map[int]struct{}
+	removedprompt_requests map[int]struct{}
+	clearedprompt_requests bool
+	done                   bool
+	oldValue               func(context.Context) (*User, error)
+	predicates             []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1309,6 +1371,60 @@ func (m *UserMutation) ResetCreateDate() {
 	m.create_date = nil
 }
 
+// AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by ids.
+func (m *UserMutation) AddPromptRequestIDs(ids ...int) {
+	if m.prompt_requests == nil {
+		m.prompt_requests = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.prompt_requests[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPromptRequests clears the "prompt_requests" edge to the PromptRequest entity.
+func (m *UserMutation) ClearPromptRequests() {
+	m.clearedprompt_requests = true
+}
+
+// PromptRequestsCleared reports if the "prompt_requests" edge to the PromptRequest entity was cleared.
+func (m *UserMutation) PromptRequestsCleared() bool {
+	return m.clearedprompt_requests
+}
+
+// RemovePromptRequestIDs removes the "prompt_requests" edge to the PromptRequest entity by IDs.
+func (m *UserMutation) RemovePromptRequestIDs(ids ...int) {
+	if m.removedprompt_requests == nil {
+		m.removedprompt_requests = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.prompt_requests, ids[i])
+		m.removedprompt_requests[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPromptRequests returns the removed IDs of the "prompt_requests" edge to the PromptRequest entity.
+func (m *UserMutation) RemovedPromptRequestsIDs() (ids []int) {
+	for id := range m.removedprompt_requests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PromptRequestsIDs returns the "prompt_requests" edge IDs in the mutation.
+func (m *UserMutation) PromptRequestsIDs() (ids []int) {
+	for id := range m.prompt_requests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPromptRequests resets all changes to the "prompt_requests" edge.
+func (m *UserMutation) ResetPromptRequests() {
+	m.prompt_requests = nil
+	m.clearedprompt_requests = false
+	m.removedprompt_requests = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1476,48 +1592,84 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.prompt_requests != nil {
+		edges = append(edges, user.EdgePromptRequests)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgePromptRequests:
+		ids := make([]ent.Value, 0, len(m.prompt_requests))
+		for id := range m.prompt_requests {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedprompt_requests != nil {
+		edges = append(edges, user.EdgePromptRequests)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgePromptRequests:
+		ids := make([]ent.Value, 0, len(m.removedprompt_requests))
+		for id := range m.removedprompt_requests {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedprompt_requests {
+		edges = append(edges, user.EdgePromptRequests)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
+	switch name {
+	case user.EdgePromptRequests:
+		return m.clearedprompt_requests
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
+	switch name {
+	case user.EdgePromptRequests:
+		m.ResetPromptRequests()
+		return nil
+	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

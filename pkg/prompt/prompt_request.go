@@ -10,10 +10,11 @@ import (
 	"github.com/mateusap1/promptq/ent/promptrequest"
 )
 
-func MakePromptRequest(ctx context.Context, client *ent.Client, prompt string) (*ent.PromptRequest, error) {
+func MakePromptRequest(ctx context.Context, client *ent.Client, prompt string, user *ent.User) (*ent.PromptRequest, error) {
 	pr, err := client.PromptRequest.
 		Create().
 		SetPrompt(prompt).
+		SetUser(user).
 		Save(ctx)
 
 	if err != nil {

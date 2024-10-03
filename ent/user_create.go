@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/user"
 )
 
@@ -44,6 +45,21 @@ func (uc *UserCreate) SetNillableCreateDate(t *time.Time) *UserCreate {
 		uc.SetCreateDate(*t)
 	}
 	return uc
+}
+
+// AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by IDs.
+func (uc *UserCreate) AddPromptRequestIDs(ids ...int) *UserCreate {
+	uc.mutation.AddPromptRequestIDs(ids...)
+	return uc
+}
+
+// AddPromptRequests adds the "prompt_requests" edges to the PromptRequest entity.
+func (uc *UserCreate) AddPromptRequests(p ...*PromptRequest) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddPromptRequestIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -135,6 +151,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
 		_node.CreateDate = value
+	}
+	if nodes := uc.mutation.PromptRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

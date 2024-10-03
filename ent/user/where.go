@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mateusap1/promptq/ent/predicate"
 )
 
@@ -237,6 +238,29 @@ func CreateDateLT(v time.Time) predicate.User {
 // CreateDateLTE applies the LTE predicate on the "create_date" field.
 func CreateDateLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreateDate, v))
+}
+
+// HasPromptRequests applies the HasEdge predicate on the "prompt_requests" edge.
+func HasPromptRequests() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PromptRequestsTable, PromptRequestsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPromptRequestsWith applies the HasEdge predicate on the "prompt_requests" edge with a given conditions (other predicates).
+func HasPromptRequestsWith(preds ...predicate.PromptRequest) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newPromptRequestsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

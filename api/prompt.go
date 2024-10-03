@@ -13,6 +13,7 @@ import (
 	"github.com/mateusap1/promptq/ent"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/pkg/prompt"
+	"github.com/mateusap1/promptq/pkg/user"
 )
 
 func loadDotEnv() error {
@@ -31,12 +32,22 @@ func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	pr, err := prompt.MakePromptRequest(ctx, client, promptForm.Prompt)
+	us, err := user.GetUser(ctx, client, promptForm.Auth)
 	if err != nil {
 		fmt.Print(err)
 
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"Message": "Error while trying to make prompt request",
+			"Message": "Error while trying to authenticate user.",
+		})
+		return
+	}
+
+	pr, err := prompt.MakePromptRequest(ctx, client, promptForm.Prompt, us)
+	if err != nil {
+		fmt.Print(err)
+
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"Message": "Error while trying to make prompt request.",
 		})
 		return
 	}

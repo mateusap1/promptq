@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/predicate"
+	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/user"
 )
 
@@ -70,9 +71,45 @@ func (uu *UserUpdate) SetNillableCreateDate(t *time.Time) *UserUpdate {
 	return uu
 }
 
+// AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by IDs.
+func (uu *UserUpdate) AddPromptRequestIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddPromptRequestIDs(ids...)
+	return uu
+}
+
+// AddPromptRequests adds the "prompt_requests" edges to the PromptRequest entity.
+func (uu *UserUpdate) AddPromptRequests(p ...*PromptRequest) *UserUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.AddPromptRequestIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearPromptRequests clears all "prompt_requests" edges to the PromptRequest entity.
+func (uu *UserUpdate) ClearPromptRequests() *UserUpdate {
+	uu.mutation.ClearPromptRequests()
+	return uu
+}
+
+// RemovePromptRequestIDs removes the "prompt_requests" edge to PromptRequest entities by IDs.
+func (uu *UserUpdate) RemovePromptRequestIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemovePromptRequestIDs(ids...)
+	return uu
+}
+
+// RemovePromptRequests removes "prompt_requests" edges to PromptRequest entities.
+func (uu *UserUpdate) RemovePromptRequests(p ...*PromptRequest) *UserUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.RemovePromptRequestIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -119,6 +156,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
+	}
+	if uu.mutation.PromptRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedPromptRequestsIDs(); len(nodes) > 0 && !uu.mutation.PromptRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.PromptRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -182,9 +264,45 @@ func (uuo *UserUpdateOne) SetNillableCreateDate(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by IDs.
+func (uuo *UserUpdateOne) AddPromptRequestIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddPromptRequestIDs(ids...)
+	return uuo
+}
+
+// AddPromptRequests adds the "prompt_requests" edges to the PromptRequest entity.
+func (uuo *UserUpdateOne) AddPromptRequests(p ...*PromptRequest) *UserUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.AddPromptRequestIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearPromptRequests clears all "prompt_requests" edges to the PromptRequest entity.
+func (uuo *UserUpdateOne) ClearPromptRequests() *UserUpdateOne {
+	uuo.mutation.ClearPromptRequests()
+	return uuo
+}
+
+// RemovePromptRequestIDs removes the "prompt_requests" edge to PromptRequest entities by IDs.
+func (uuo *UserUpdateOne) RemovePromptRequestIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemovePromptRequestIDs(ids...)
+	return uuo
+}
+
+// RemovePromptRequests removes "prompt_requests" edges to PromptRequest entities.
+func (uuo *UserUpdateOne) RemovePromptRequests(p ...*PromptRequest) *UserUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.RemovePromptRequestIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -261,6 +379,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
+	}
+	if uuo.mutation.PromptRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedPromptRequestsIDs(); len(nodes) > 0 && !uuo.mutation.PromptRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.PromptRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PromptRequestsTable,
+			Columns: []string{user.PromptRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(promptrequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

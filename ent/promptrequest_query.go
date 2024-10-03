@@ -14,6 +14,7 @@ import (
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 // PromptRequestQuery is the builder for querying PromptRequest entities.
@@ -24,6 +25,8 @@ type PromptRequestQuery struct {
 	inters             []Interceptor
 	predicates         []predicate.PromptRequest
 	withPromptResponse *PromptResponseQuery
+	withUser           *UserQuery
+	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +78,28 @@ func (prq *PromptRequestQuery) QueryPromptResponse() *PromptResponseQuery {
 			sqlgraph.From(promptrequest.Table, promptrequest.FieldID, selector),
 			sqlgraph.To(promptresponse.Table, promptresponse.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, promptrequest.PromptResponseTable, promptrequest.PromptResponseColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (prq *PromptRequestQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: prq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := prq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := prq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promptrequest.Table, promptrequest.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, promptrequest.UserTable, promptrequest.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
 		return fromU, nil
@@ -275,6 +300,7 @@ func (prq *PromptRequestQuery) Clone() *PromptRequestQuery {
 		inters:             append([]Interceptor{}, prq.inters...),
 		predicates:         append([]predicate.PromptRequest{}, prq.predicates...),
 		withPromptResponse: prq.withPromptResponse.Clone(),
+		withUser:           prq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  prq.sql.Clone(),
 		path: prq.path,
@@ -289,6 +315,17 @@ func (prq *PromptRequestQuery) WithPromptResponse(opts ...func(*PromptResponseQu
 		opt(query)
 	}
 	prq.withPromptResponse = query
+	return prq
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (prq *PromptRequestQuery) WithUser(opts ...func(*UserQuery)) *PromptRequestQuery {
+	query := (&UserClient{config: prq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	prq.withUser = query
 	return prq
 }
 
@@ -369,11 +406,19 @@ func (prq *PromptRequestQuery) prepareQuery(ctx context.Context) error {
 func (prq *PromptRequestQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*PromptRequest, error) {
 	var (
 		nodes       = []*PromptRequest{}
+		withFKs     = prq.withFKs
 		_spec       = prq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			prq.withPromptResponse != nil,
+			prq.withUser != nil,
 		}
 	)
+	if prq.withUser != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, promptrequest.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*PromptRequest).scanValues(nil, columns)
 	}
@@ -395,6 +440,12 @@ func (prq *PromptRequestQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if query := prq.withPromptResponse; query != nil {
 		if err := prq.loadPromptResponse(ctx, query, nodes, nil,
 			func(n *PromptRequest, e *PromptResponse) { n.Edges.PromptResponse = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := prq.withUser; query != nil {
+		if err := prq.loadUser(ctx, query, nodes, nil,
+			func(n *PromptRequest, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -426,6 +477,38 @@ func (prq *PromptRequestQuery) loadPromptResponse(ctx context.Context, query *Pr
 			return fmt.Errorf(`unexpected referenced foreign-key "prompt_request_prompt_response" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (prq *PromptRequestQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*PromptRequest, init func(*PromptRequest), assign func(*PromptRequest, *User)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*PromptRequest)
+	for i := range nodes {
+		if nodes[i].user_prompt_requests == nil {
+			continue
+		}
+		fk := *nodes[i].user_prompt_requests
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_prompt_requests" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

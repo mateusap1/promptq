@@ -15,6 +15,7 @@ import (
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 // PromptRequestUpdate is the builder for updating PromptRequest entities.
@@ -119,6 +120,25 @@ func (pru *PromptRequestUpdate) SetPromptResponse(p *PromptResponse) *PromptRequ
 	return pru.SetPromptResponseID(p.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (pru *PromptRequestUpdate) SetUserID(id int) *PromptRequestUpdate {
+	pru.mutation.SetUserID(id)
+	return pru
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (pru *PromptRequestUpdate) SetNillableUserID(id *int) *PromptRequestUpdate {
+	if id != nil {
+		pru = pru.SetUserID(*id)
+	}
+	return pru
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (pru *PromptRequestUpdate) SetUser(u *User) *PromptRequestUpdate {
+	return pru.SetUserID(u.ID)
+}
+
 // Mutation returns the PromptRequestMutation object of the builder.
 func (pru *PromptRequestUpdate) Mutation() *PromptRequestMutation {
 	return pru.mutation
@@ -127,6 +147,12 @@ func (pru *PromptRequestUpdate) Mutation() *PromptRequestMutation {
 // ClearPromptResponse clears the "prompt_response" edge to the PromptResponse entity.
 func (pru *PromptRequestUpdate) ClearPromptResponse() *PromptRequestUpdate {
 	pru.mutation.ClearPromptResponse()
+	return pru
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (pru *PromptRequestUpdate) ClearUser() *PromptRequestUpdate {
+	pru.mutation.ClearUser()
 	return pru
 }
 
@@ -203,6 +229,35 @@ func (pru *PromptRequestUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pru.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   promptrequest.UserTable,
+			Columns: []string{promptrequest.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   promptrequest.UserTable,
+			Columns: []string{promptrequest.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -319,6 +374,25 @@ func (pruo *PromptRequestUpdateOne) SetPromptResponse(p *PromptResponse) *Prompt
 	return pruo.SetPromptResponseID(p.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (pruo *PromptRequestUpdateOne) SetUserID(id int) *PromptRequestUpdateOne {
+	pruo.mutation.SetUserID(id)
+	return pruo
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (pruo *PromptRequestUpdateOne) SetNillableUserID(id *int) *PromptRequestUpdateOne {
+	if id != nil {
+		pruo = pruo.SetUserID(*id)
+	}
+	return pruo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (pruo *PromptRequestUpdateOne) SetUser(u *User) *PromptRequestUpdateOne {
+	return pruo.SetUserID(u.ID)
+}
+
 // Mutation returns the PromptRequestMutation object of the builder.
 func (pruo *PromptRequestUpdateOne) Mutation() *PromptRequestMutation {
 	return pruo.mutation
@@ -327,6 +401,12 @@ func (pruo *PromptRequestUpdateOne) Mutation() *PromptRequestMutation {
 // ClearPromptResponse clears the "prompt_response" edge to the PromptResponse entity.
 func (pruo *PromptRequestUpdateOne) ClearPromptResponse() *PromptRequestUpdateOne {
 	pruo.mutation.ClearPromptResponse()
+	return pruo
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (pruo *PromptRequestUpdateOne) ClearUser() *PromptRequestUpdateOne {
+	pruo.mutation.ClearUser()
 	return pruo
 }
 
@@ -433,6 +513,35 @@ func (pruo *PromptRequestUpdateOne) sqlSave(ctx context.Context) (_node *PromptR
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(promptresponse.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pruo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   promptrequest.UserTable,
+			Columns: []string{promptrequest.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   promptrequest.UserTable,
+			Columns: []string{promptrequest.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -341,6 +341,22 @@ func (c *PromptRequestClient) QueryPromptResponse(pr *PromptRequest) *PromptResp
 	return query
 }
 
+// QueryUser queries the user edge of a PromptRequest.
+func (c *PromptRequestClient) QueryUser(pr *PromptRequest) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promptrequest.Table, promptrequest.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, promptrequest.UserTable, promptrequest.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PromptRequestClient) Hooks() []Hook {
 	return c.hooks.PromptRequest
@@ -621,6 +637,22 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryPromptRequests queries the prompt_requests edge of a User.
+func (c *UserClient) QueryPromptRequests(u *User) *PromptRequestQuery {
+	query := (&PromptRequestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(promptrequest.Table, promptrequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.PromptRequestsTable, user.PromptRequestsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

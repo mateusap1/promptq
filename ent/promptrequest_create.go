@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 // PromptRequestCreate is the builder for creating a PromptRequest entity.
@@ -101,6 +102,25 @@ func (prc *PromptRequestCreate) SetNillablePromptResponseID(id *int) *PromptRequ
 // SetPromptResponse sets the "prompt_response" edge to the PromptResponse entity.
 func (prc *PromptRequestCreate) SetPromptResponse(p *PromptResponse) *PromptRequestCreate {
 	return prc.SetPromptResponseID(p.ID)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (prc *PromptRequestCreate) SetUserID(id int) *PromptRequestCreate {
+	prc.mutation.SetUserID(id)
+	return prc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (prc *PromptRequestCreate) SetNillableUserID(id *int) *PromptRequestCreate {
+	if id != nil {
+		prc = prc.SetUserID(*id)
+	}
+	return prc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (prc *PromptRequestCreate) SetUser(u *User) *PromptRequestCreate {
+	return prc.SetUserID(u.ID)
 }
 
 // Mutation returns the PromptRequestMutation object of the builder.
@@ -233,6 +253,23 @@ func (prc *PromptRequestCreate) createSpec() (*PromptRequest, *sqlgraph.CreateSp
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := prc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   promptrequest.UserTable,
+			Columns: []string{promptrequest.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_prompt_requests = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

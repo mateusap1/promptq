@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
+	"github.com/mateusap1/promptq/ent/user"
 )
 
 // PromptRequest is the model entity for the PromptRequest schema.
@@ -31,17 +32,20 @@ type PromptRequest struct {
 	CreateDate time.Time `json:"create_date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PromptRequestQuery when eager-loading is set.
-	Edges        PromptRequestEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                PromptRequestEdges `json:"edges"`
+	user_prompt_requests *int
+	selectValues         sql.SelectValues
 }
 
 // PromptRequestEdges holds the relations/edges for other nodes in the graph.
 type PromptRequestEdges struct {
 	// PromptResponse holds the value of the prompt_response edge.
 	PromptResponse *PromptResponse `json:"prompt_response,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // PromptResponseOrErr returns the PromptResponse value or an error if the edge
@@ -53,6 +57,17 @@ func (e PromptRequestEdges) PromptResponseOrErr() (*PromptResponse, error) {
 		return nil, &NotFoundError{label: promptresponse.Label}
 	}
 	return nil, &NotLoadedError{edge: "prompt_response"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PromptRequestEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -70,6 +85,8 @@ func (*PromptRequest) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case promptrequest.FieldIdentifier:
 			values[i] = new(uuid.UUID)
+		case promptrequest.ForeignKeys[0]: // user_prompt_requests
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -121,6 +138,13 @@ func (pr *PromptRequest) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.CreateDate = value.Time
 			}
+		case promptrequest.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_prompt_requests", value)
+			} else if value.Valid {
+				pr.user_prompt_requests = new(int)
+				*pr.user_prompt_requests = int(value.Int64)
+			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
 		}
@@ -137,6 +161,11 @@ func (pr *PromptRequest) Value(name string) (ent.Value, error) {
 // QueryPromptResponse queries the "prompt_response" edge of the PromptRequest entity.
 func (pr *PromptRequest) QueryPromptResponse() *PromptResponseQuery {
 	return NewPromptRequestClient(pr.config).QueryPromptResponse(pr)
+}
+
+// QueryUser queries the "user" edge of the PromptRequest entity.
+func (pr *PromptRequest) QueryUser() *UserQuery {
+	return NewPromptRequestClient(pr.config).QueryUser(pr)
 }
 
 // Update returns a builder for updating this PromptRequest.

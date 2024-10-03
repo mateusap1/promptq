@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -19,8 +20,17 @@ const (
 	FieldAPIKey = "api_key"
 	// FieldCreateDate holds the string denoting the create_date field in the database.
 	FieldCreateDate = "create_date"
+	// EdgePromptRequests holds the string denoting the prompt_requests edge name in mutations.
+	EdgePromptRequests = "prompt_requests"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// PromptRequestsTable is the table that holds the prompt_requests relation/edge.
+	PromptRequestsTable = "prompt_requests"
+	// PromptRequestsInverseTable is the table name for the PromptRequest entity.
+	// It exists in this package in order to avoid circular dependency with the "promptrequest" package.
+	PromptRequestsInverseTable = "prompt_requests"
+	// PromptRequestsColumn is the table column denoting the prompt_requests relation/edge.
+	PromptRequestsColumn = "user_prompt_requests"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -67,4 +77,25 @@ func ByAPIKey(opts ...sql.OrderTermOption) OrderOption {
 // ByCreateDate orders the results by the create_date field.
 func ByCreateDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreateDate, opts...).ToFunc()
+}
+
+// ByPromptRequestsCount orders the results by prompt_requests count.
+func ByPromptRequestsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPromptRequestsStep(), opts...)
+	}
+}
+
+// ByPromptRequests orders the results by prompt_requests terms.
+func ByPromptRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPromptRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newPromptRequestsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PromptRequestsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PromptRequestsTable, PromptRequestsColumn),
+	)
 }

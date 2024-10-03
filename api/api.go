@@ -17,6 +17,7 @@ type PromptResponse struct {
 
 type CreatePromptRequest struct {
 	Prompt string
+	Auth   string
 }
 
 type QueuePromptRequest struct {

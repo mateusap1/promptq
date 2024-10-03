@@ -16,12 +16,21 @@ var (
 		{Name: "is_queued", Type: field.TypeBool, Default: false},
 		{Name: "is_answered", Type: field.TypeBool, Default: false},
 		{Name: "create_date", Type: field.TypeTime},
+		{Name: "user_prompt_requests", Type: field.TypeInt, Nullable: true},
 	}
 	// PromptRequestsTable holds the schema information for the "prompt_requests" table.
 	PromptRequestsTable = &schema.Table{
 		Name:       "prompt_requests",
 		Columns:    PromptRequestsColumns,
 		PrimaryKey: []*schema.Column{PromptRequestsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "prompt_requests_users_prompt_requests",
+				Columns:    []*schema.Column{PromptRequestsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// PromptResponsesColumns holds the columns for the "prompt_responses" table.
 	PromptResponsesColumns = []*schema.Column{
@@ -66,5 +75,6 @@ var (
 )
 
 func init() {
+	PromptRequestsTable.ForeignKeys[0].RefTable = UsersTable
 	PromptResponsesTable.ForeignKeys[0].RefTable = PromptRequestsTable
 }

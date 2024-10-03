@@ -29,5 +29,6 @@ func (PromptRequest) Fields() []ent.Field {
 func (PromptRequest) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("prompt_response", PromptResponse.Type).Unique(),
+		edge.From("user", User.Type).Ref("prompt_requests").Unique(),
 	}
 }
