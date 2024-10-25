@@ -1,17 +1,14 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 
 	"github.com/mateusap1/promptq/ent"
-	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/pkg/prompt"
 	"github.com/mateusap1/promptq/pkg/user"
 )
@@ -22,7 +19,7 @@ func loadDotEnv() error {
 	return err
 }
 
-func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
+func CreatePrompt(c *gin.Context, us *user.UserService, ps *prompt.PromptService) {
 	var promptForm CreatePromptRequest
 
 	if err := c.BindJSON(&promptForm); err != nil {
@@ -32,7 +29,7 @@ func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	us, err := user.GetUser(ctx, client, promptForm.Auth)
+	user, err := us.GetUser(promptForm.Auth)
 	if err != nil {
 		fmt.Print(err)
 
@@ -42,7 +39,7 @@ func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	pr, err := prompt.MakePromptRequest(ctx, client, promptForm.Prompt, us)
+	pr, err := ps.MakePromptRequest(promptForm.Prompt, user)
 	if err != nil {
 		fmt.Print(err)
 
@@ -55,7 +52,7 @@ func CreatePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 	c.IndentedJSON(http.StatusOK, RequestPromptResponse{QueueId: pr.Identifier.String(), Prompt: pr.Prompt})
 }
 
-func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
+func QueuePrompt(c *gin.Context, ps *prompt.PromptService) {
 	err := loadDotEnv()
 	if err != nil {
 		fmt.Print(err)
@@ -90,7 +87,7 @@ func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	hasQueue, err := prompt.HasQueuePromptRequest(ctx, client)
+	hasQueue, err := ps.HasQueuePromptRequest()
 	if err != nil {
 		fmt.Print(err)
 
@@ -105,7 +102,7 @@ func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 			"Message": "No prompts left.",
 		})
 	} else {
-		pr, err := prompt.QueuePromptRequest(ctx, client)
+		pr, err := ps.QueuePromptRequest()
 		if err != nil {
 			fmt.Print(err)
 
@@ -119,7 +116,7 @@ func QueuePrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 	}
 }
 
-func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
+func AnswerPrompt(c *gin.Context, ps *prompt.PromptService) {
 	err := loadDotEnv()
 	if err != nil {
 		fmt.Print(err)
@@ -154,16 +151,7 @@ func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	promptId := c.Param("id")
-	promptIdentifier, err := uuid.Parse(promptId)
-	if err != nil {
-		c.IndentedJSON(http.StatusForbidden, gin.H{
-			"Message": "Prompt ID with wrong format.",
-		})
-		return
-	}
-
-	pr, err := client.PromptRequest.Query().Where(promptrequest.Identifier(promptIdentifier)).Only(ctx)
+	pr, err := ps.GetPromptRequest(c.Param("id"))
 	if err != nil {
 		fmt.Print(err)
 
@@ -180,7 +168,7 @@ func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		}
 	}
 
-	_, err = prompt.MakePromptResponse(ctx, client, pr, responseForm.Response)
+	_, err = ps.MakePromptResponse(pr, responseForm.Response)
 	if err != nil {
 		fmt.Print(err)
 
@@ -190,7 +178,7 @@ func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	_, err = prompt.AnswerPromptRequest(ctx, client, pr)
+	_, err = ps.AnswerPromptRequest(pr)
 	if err != nil {
 		fmt.Print(err)
 
@@ -203,17 +191,8 @@ func AnswerPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 	c.IndentedJSON(http.StatusOK, PromptResponse{Prompt: pr.Prompt, State: "answered", Response: responseForm.Response})
 }
 
-func GetPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
-	promptId := c.Param("id")
-	promptIdentifier, err := uuid.Parse(promptId)
-	if err != nil {
-		c.IndentedJSON(http.StatusForbidden, gin.H{
-			"Message": "Prompt ID with wrong format.",
-		})
-		return
-	}
-
-	pr, err := client.PromptRequest.Query().Where(promptrequest.Identifier(promptIdentifier)).Only(ctx)
+func GetPrompt(c *gin.Context, ps *prompt.PromptService) {
+	pr, err := ps.GetPromptRequest(c.Param("id"))
 	if err != nil {
 		fmt.Print(err)
 
@@ -231,7 +210,7 @@ func GetPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 	}
 
 	if pr.IsAnswered {
-		prp, err := pr.QueryPromptResponse().Only(ctx)
+		prp, err := ps.GetPromptResponse(pr)
 		if err != nil {
 			fmt.Print(err)
 
@@ -249,7 +228,7 @@ func GetPrompt(c *gin.Context, ctx context.Context, client *ent.Client) {
 	}
 }
 
-func GetPrompts(c *gin.Context, ctx context.Context, client *ent.Client) {
+func GetPrompts(c *gin.Context, us *user.UserService, ps *prompt.PromptService) {
 	var promptsForm GetPromptsRequest
 
 	if err := c.BindJSON(&promptsForm); err != nil {
@@ -259,7 +238,7 @@ func GetPrompts(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	us, err := user.GetUser(ctx, client, promptsForm.ApiKey)
+	user, err := us.GetUser(promptsForm.ApiKey)
 	if err != nil {
 		fmt.Print(err)
 
@@ -269,7 +248,7 @@ func GetPrompts(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	requests, err := prompt.GetPromptRequests(ctx, client, us)
+	requests, err := ps.GetPromptRequests(user)
 	if err != nil {
 		fmt.Print(err)
 

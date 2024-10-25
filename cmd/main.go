@@ -11,6 +11,8 @@ import (
 
 	"github.com/mateusap1/promptq/api"
 	"github.com/mateusap1/promptq/ent"
+	"github.com/mateusap1/promptq/pkg/prompt"
+	"github.com/mateusap1/promptq/pkg/user"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -33,12 +35,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed accessing env variable: %v", err)
 	}
-	POSTGRES_URL, present := os.LookupEnv("POSTGRES_URL")
+
+	postgresUrl, present := os.LookupEnv("POSTGRES_URL")
 	if !present {
-		log.Fatalf("postgres url not defined.")
+		log.Fatalf("POSTGRES_URL not defined.")
 	}
 
-	client := Open(POSTGRES_URL)
+	client := Open(postgresUrl)
 	defer client.Close()
 
 	ctx := context.Background()
@@ -48,13 +51,17 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
+	us := user.CreateService(ctx, client)
+	ps := prompt.CreateService(ctx, client)
+
 	router := gin.Default()
 	router.GET("/health", api.GetHealth)
-	router.POST("/prompt", func(c *gin.Context) { api.CreatePrompt(c, ctx, client) })
-	router.PUT("/prompt", func(c *gin.Context) { api.QueuePrompt(c, ctx, client) })
-	router.POST("/prompt/:id", func(c *gin.Context) { api.AnswerPrompt(c, ctx, client) })
-	router.GET("/prompt/:id", func(c *gin.Context) { api.GetPrompt(c, ctx, client) })
-	router.POST("/user", func(c *gin.Context) { api.CreateUser(c, ctx, client) })
+	router.POST("/prompt", func(c *gin.Context) { api.CreatePrompt(c, us, ps) })
+	router.PUT("/prompt", func(c *gin.Context) { api.QueuePrompt(c, ps) })
+	router.POST("/prompt/:id", func(c *gin.Context) { api.AnswerPrompt(c, ps) })
+	router.GET("/prompt/:id", func(c *gin.Context) { api.GetPrompt(c, ps) })
+	router.GET("/prompt/list", func(c *gin.Context) { api.GetPrompts(c, us, ps) })
+	router.POST("/user", func(c *gin.Context) { api.CreateUser(c, us) })
 
 	// For running in production just use router.Run()
 	router.Run()

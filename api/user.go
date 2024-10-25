@@ -1,16 +1,14 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mateusap1/promptq/ent"
 	"github.com/mateusap1/promptq/pkg/user"
 )
 
-func CreateUser(c *gin.Context, ctx context.Context, client *ent.Client) {
+func CreateUser(c *gin.Context, us *user.UserService) {
 	var userForm CreateUserRequest
 
 	if err := c.BindJSON(&userForm); err != nil {
@@ -20,7 +18,7 @@ func CreateUser(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	us, err := user.MakeUser(ctx, client, userForm.UserName)
+	user, err := us.MakeUser(userForm.UserName)
 	if err != nil {
 		fmt.Print(err)
 
@@ -30,5 +28,5 @@ func CreateUser(c *gin.Context, ctx context.Context, client *ent.Client) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, CreateUserResponse{UserName: us.Username, ApiKey: us.APIKey})
+	c.IndentedJSON(http.StatusOK, CreateUserResponse{UserName: user.Username, ApiKey: user.APIKey})
 }

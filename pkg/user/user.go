@@ -26,6 +26,10 @@ type UserService struct {
 	client *ent.Client
 }
 
+func CreateService(ctx context.Context, client *ent.Client) *UserService {
+	return &UserService{ctx, client}
+}
+
 func (s *UserService) MakeUser(username string) (*ent.User, error) {
 	ctx, client := s.ctx, s.client
 

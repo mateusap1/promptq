@@ -27,7 +27,7 @@ func setupDatabase(t *testing.T) (context.Context, *ent.Client) {
 func setupService(t *testing.T) (s *UserService) {
 	ctx, client := setupDatabase(t)
 
-	return &UserService{ctx, client}
+	return CreateService(ctx, client)
 }
 
 func TestMakeUser(t *testing.T) {
