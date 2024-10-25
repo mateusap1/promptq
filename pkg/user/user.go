@@ -21,7 +21,14 @@ func randomStringCrypto(length int) (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes)[:length], nil
 }
 
-func MakeUser(ctx context.Context, client *ent.Client, username string) (*ent.User, error) {
+type UserService struct {
+	ctx    context.Context
+	client *ent.Client
+}
+
+func (s *UserService) MakeUser(username string) (*ent.User, error) {
+	ctx, client := s.ctx, s.client
+
 	apiKey, err := randomStringCrypto(64)
 	if err != nil {
 		return nil, fmt.Errorf("failed generating api key: %w", err)
@@ -41,7 +48,9 @@ func MakeUser(ctx context.Context, client *ent.Client, username string) (*ent.Us
 	return user, nil
 }
 
-func GetUser(ctx context.Context, client *ent.Client, api_key string) (*ent.User, error) {
+func (s *UserService) GetUser(api_key string) (*ent.User, error) {
+	ctx, client := s.ctx, s.client
+
 	us, err := client.User.Query().Where(user.APIKeyEQ(api_key)).First(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting latest user: %w", err)
