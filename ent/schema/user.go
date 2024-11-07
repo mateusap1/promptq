@@ -17,7 +17,7 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").Unique(),
-		field.String("api_key"),
+		field.String("password"),
 		field.Time("create_date").Default(time.Now),
 	}
 }

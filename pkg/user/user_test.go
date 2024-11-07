@@ -35,7 +35,7 @@ func TestMakeUser(t *testing.T) {
 	defer us.client.Close()
 
 	t.Run("Create user", func(t *testing.T) {
-		user, err := us.MakeUser("test123")
+		user, err := us.MakeUser("test123", "secret123")
 		if err != nil {
 			t.Fatalf("failed creating user: %v", err)
 		}
@@ -47,6 +47,7 @@ func TestMakeUser(t *testing.T) {
 
 		assert.Equal(t, userCount, 1)
 		assert.Equal(t, user.Username, "test123")
+		assert.Equal(t, user.Password, "secret123")
 	})
 }
 
@@ -54,10 +55,10 @@ func TestGetUser(t *testing.T) {
 	us := setupService(t)
 	defer us.client.Close()
 
-	_, err := us.client.User.
+	user, err := us.client.User.
 		Create().
 		SetUsername("test123").
-		SetAPIKey("secret123").
+		SetPassword("secret123").
 		Save(us.ctx)
 
 	if err != nil {
@@ -66,7 +67,7 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("Get user", func(t *testing.T) {
 
-		user, err := us.GetUser("secret123")
+		user, err := us.GetUser(user.ID)
 		if err != nil {
 			t.Fatalf("failed getting user: %v", err)
 		}

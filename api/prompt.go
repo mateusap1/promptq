@@ -6,83 +6,58 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 
 	"github.com/mateusap1/promptq/ent"
+	"github.com/mateusap1/promptq/middleware/auth"
 	"github.com/mateusap1/promptq/pkg/prompt"
 	"github.com/mateusap1/promptq/pkg/user"
 )
 
-func loadDotEnv() error {
-	err := godotenv.Load(".env")
+func raiseInvalidPrompt(c *gin.Context) {
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+		"error": "Invalid prompt",
+		"code":  "WRONG_FORMAT",
+	})
+}
 
-	return err
+func raiseServerError(c *gin.Context, err string) {
+	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+		"error": "internal server error",
+		"code":  "INTERNAL_SERVER_ERROR",
+	})
+	return
 }
 
 func CreatePrompt(c *gin.Context, us *user.UserService, ps *prompt.PromptService) {
-	var promptForm CreatePromptRequest
+	var form struct {
+		Prompt string
+	}
 
-	if err := c.BindJSON(&promptForm); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"Message": "Prompt not provided or formatted incorrectly.",
-		})
+	if err := c.BindJSON(&form); err != nil {
+		raiseInvalidPrompt(c)
 		return
 	}
 
-	user, err := us.GetUser(promptForm.Auth)
+	user, err := auth.GetUser(c)
 	if err != nil {
-		fmt.Print(err)
-
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"Message": "Error while trying to authenticate user.",
-		})
+		raiseServerError(c, "failed getting user from session")
 		return
 	}
 
-	pr, err := ps.MakePromptRequest(promptForm.Prompt, user)
+	pr, err := ps.MakePromptRequest(form.Prompt, user)
 	if err != nil {
-		fmt.Print(err)
-
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"Message": "Error while trying to make prompt request.",
-		})
+		raiseServerError(c, "failed making prompt request")
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, RequestPromptResponse{QueueId: pr.Identifier.String(), Prompt: pr.Prompt})
 }
 
-func QueuePrompt(c *gin.Context, ps *prompt.PromptService) {
-	err := loadDotEnv()
-	if err != nil {
-		fmt.Print(err)
-
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"Message": "Internal Server Error",
-		})
-		return
-	}
-
-	API_KEY, present := os.LookupEnv("API_KEY")
+func QueuePrompt(c *gin.Context, us *user.UserService, ps *prompt.PromptService) {
+	apiKey, present := os.LookupEnv("API_KEY")
 	if !present {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"Message": "Undefined env variable.",
-		})
-		return
-	}
-
-	var queueForm QueuePromptRequest
-
-	if err := c.BindJSON(&queueForm); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"Message": "Authentication key not provided.",
-		})
-		return
-	}
-
-	if queueForm.Auth != API_KEY {
-		c.IndentedJSON(http.StatusForbidden, gin.H{
-			"Message": "Incorrect authentication key.",
 		})
 		return
 	}

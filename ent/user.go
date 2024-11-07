@@ -19,8 +19,8 @@ type User struct {
 	ID int `json:"id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
-	// APIKey holds the value of the "api_key" field.
-	APIKey string `json:"api_key,omitempty"`
+	// Password holds the value of the "password" field.
+	Password string `json:"password,omitempty"`
 	// CreateDate holds the value of the "create_date" field.
 	CreateDate time.Time `json:"create_date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -54,7 +54,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldAPIKey:
+		case user.FieldUsername, user.FieldPassword:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateDate:
 			values[i] = new(sql.NullTime)
@@ -85,11 +85,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Username = value.String
 			}
-		case user.FieldAPIKey:
+		case user.FieldPassword:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field api_key", values[i])
+				return fmt.Errorf("unexpected type %T for field password", values[i])
 			} else if value.Valid {
-				u.APIKey = value.String
+				u.Password = value.String
 			}
 		case user.FieldCreateDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -141,8 +141,8 @@ func (u *User) String() string {
 	builder.WriteString("username=")
 	builder.WriteString(u.Username)
 	builder.WriteString(", ")
-	builder.WriteString("api_key=")
-	builder.WriteString(u.APIKey)
+	builder.WriteString("password=")
+	builder.WriteString(u.Password)
 	builder.WriteString(", ")
 	builder.WriteString("create_date=")
 	builder.WriteString(u.CreateDate.Format(time.ANSIC))

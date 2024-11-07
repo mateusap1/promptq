@@ -16,8 +16,8 @@ const (
 	FieldID = "id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
-	// FieldAPIKey holds the string denoting the api_key field in the database.
-	FieldAPIKey = "api_key"
+	// FieldPassword holds the string denoting the password field in the database.
+	FieldPassword = "password"
 	// FieldCreateDate holds the string denoting the create_date field in the database.
 	FieldCreateDate = "create_date"
 	// EdgePromptRequests holds the string denoting the prompt_requests edge name in mutations.
@@ -37,7 +37,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUsername,
-	FieldAPIKey,
+	FieldPassword,
 	FieldCreateDate,
 }
 
@@ -69,9 +69,9 @@ func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
-// ByAPIKey orders the results by the api_key field.
-func ByAPIKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAPIKey, opts...).ToFunc()
+// ByPassword orders the results by the password field.
+func ByPassword(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPassword, opts...).ToFunc()
 }
 
 // ByCreateDate orders the results by the create_date field.

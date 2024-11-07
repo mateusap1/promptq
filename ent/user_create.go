@@ -27,9 +27,9 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
-// SetAPIKey sets the "api_key" field.
-func (uc *UserCreate) SetAPIKey(s string) *UserCreate {
-	uc.mutation.SetAPIKey(s)
+// SetPassword sets the "password" field.
+func (uc *UserCreate) SetPassword(s string) *UserCreate {
+	uc.mutation.SetPassword(s)
 	return uc
 }
 
@@ -108,8 +108,8 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Username(); !ok {
 		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
 	}
-	if _, ok := uc.mutation.APIKey(); !ok {
-		return &ValidationError{Name: "api_key", err: errors.New(`ent: missing required field "User.api_key"`)}
+	if _, ok := uc.mutation.Password(); !ok {
+		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
 	}
 	if _, ok := uc.mutation.CreateDate(); !ok {
 		return &ValidationError{Name: "create_date", err: errors.New(`ent: missing required field "User.create_date"`)}
@@ -144,9 +144,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 		_node.Username = value
 	}
-	if value, ok := uc.mutation.APIKey(); ok {
-		_spec.SetField(user.FieldAPIKey, field.TypeString, value)
-		_node.APIKey = value
+	if value, ok := uc.mutation.Password(); ok {
+		_spec.SetField(user.FieldPassword, field.TypeString, value)
+		_node.Password = value
 	}
 	if value, ok := uc.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)

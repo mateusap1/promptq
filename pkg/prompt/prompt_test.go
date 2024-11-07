@@ -37,7 +37,7 @@ func TestMakePromptRequest(t *testing.T) {
 	us, err := ps.client.User.
 		Create().
 		SetUsername("test123").
-		SetAPIKey("secret123").
+		SetPassword("secret123").
 		Save(ps.ctx)
 
 	if err != nil {
@@ -142,7 +142,7 @@ func TestGetPromptRequests(t *testing.T) {
 	us, err := ps.client.User.
 		Create().
 		SetUsername("test123").
-		SetAPIKey("secret123").
+		SetPassword("secret123").
 		Save(ps.ctx)
 
 	if err != nil {

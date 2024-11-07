@@ -1,5 +1,9 @@
 package api
 
+type Response struct {
+	message string
+}
+
 type HealthResponse struct {
 	Message string
 }
@@ -15,27 +19,8 @@ type PromptResponse struct {
 	Response string
 }
 
-type CreatePromptRequest struct {
-	Prompt string
-	Auth   string
-}
-
-type QueuePromptRequest struct {
-	Auth string
-}
-
 type RespondPromptRequest struct {
-	Auth     string
 	Response string
-}
-
-type CreateUserRequest struct {
-	UserName string
-}
-
-type CreateUserResponse struct {
-	UserName string
-	ApiKey   string
 }
 
 type GetPromptsRequest struct {

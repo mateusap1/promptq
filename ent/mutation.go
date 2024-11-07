@@ -1154,7 +1154,7 @@ type UserMutation struct {
 	typ                    string
 	id                     *int
 	username               *string
-	api_key                *string
+	password               *string
 	create_date            *time.Time
 	clearedFields          map[string]struct{}
 	prompt_requests        map[int]struct{}
@@ -1299,40 +1299,40 @@ func (m *UserMutation) ResetUsername() {
 	m.username = nil
 }
 
-// SetAPIKey sets the "api_key" field.
-func (m *UserMutation) SetAPIKey(s string) {
-	m.api_key = &s
+// SetPassword sets the "password" field.
+func (m *UserMutation) SetPassword(s string) {
+	m.password = &s
 }
 
-// APIKey returns the value of the "api_key" field in the mutation.
-func (m *UserMutation) APIKey() (r string, exists bool) {
-	v := m.api_key
+// Password returns the value of the "password" field in the mutation.
+func (m *UserMutation) Password() (r string, exists bool) {
+	v := m.password
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAPIKey returns the old "api_key" field's value of the User entity.
+// OldPassword returns the old "password" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldAPIKey(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAPIKey is only allowed on UpdateOne operations")
+		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAPIKey requires an ID field in the mutation")
+		return v, errors.New("OldPassword requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAPIKey: %w", err)
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
 	}
-	return oldValue.APIKey, nil
+	return oldValue.Password, nil
 }
 
-// ResetAPIKey resets all changes to the "api_key" field.
-func (m *UserMutation) ResetAPIKey() {
-	m.api_key = nil
+// ResetPassword resets all changes to the "password" field.
+func (m *UserMutation) ResetPassword() {
+	m.password = nil
 }
 
 // SetCreateDate sets the "create_date" field.
@@ -1463,8 +1463,8 @@ func (m *UserMutation) Fields() []string {
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
-	if m.api_key != nil {
-		fields = append(fields, user.FieldAPIKey)
+	if m.password != nil {
+		fields = append(fields, user.FieldPassword)
 	}
 	if m.create_date != nil {
 		fields = append(fields, user.FieldCreateDate)
@@ -1479,8 +1479,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldUsername:
 		return m.Username()
-	case user.FieldAPIKey:
-		return m.APIKey()
+	case user.FieldPassword:
+		return m.Password()
 	case user.FieldCreateDate:
 		return m.CreateDate()
 	}
@@ -1494,8 +1494,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldUsername:
 		return m.OldUsername(ctx)
-	case user.FieldAPIKey:
-		return m.OldAPIKey(ctx)
+	case user.FieldPassword:
+		return m.OldPassword(ctx)
 	case user.FieldCreateDate:
 		return m.OldCreateDate(ctx)
 	}
@@ -1514,12 +1514,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUsername(v)
 		return nil
-	case user.FieldAPIKey:
+	case user.FieldPassword:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAPIKey(v)
+		m.SetPassword(v)
 		return nil
 	case user.FieldCreateDate:
 		v, ok := value.(time.Time)
@@ -1580,8 +1580,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldUsername:
 		m.ResetUsername()
 		return nil
-	case user.FieldAPIKey:
-		m.ResetAPIKey()
+	case user.FieldPassword:
+		m.ResetPassword()
 		return nil
 	case user.FieldCreateDate:
 		m.ResetCreateDate()

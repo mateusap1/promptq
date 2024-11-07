@@ -9,16 +9,19 @@ import (
 )
 
 func CreateUser(c *gin.Context, us *user.UserService) {
-	var userForm CreateUserRequest
+	var form struct {
+		Username string
+		Password string
+	}
 
-	if err := c.BindJSON(&userForm); err != nil {
+	if err := c.BindJSON(&form); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"Message": "User not provided or formatted incorrectly.",
 		})
 		return
 	}
 
-	user, err := us.MakeUser(userForm.UserName)
+	_, err := us.MakeUser(form.Username, form.Password)
 	if err != nil {
 		fmt.Print(err)
 
@@ -28,5 +31,6 @@ func CreateUser(c *gin.Context, us *user.UserService) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, CreateUserResponse{UserName: user.Username, ApiKey: user.APIKey})
+	c.Request.Header.Add("")
+	c.IndentedJSON(http.StatusOK, Response{message: "created user successfully"})
 }

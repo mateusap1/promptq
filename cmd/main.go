@@ -55,12 +55,13 @@ func main() {
 	ps := prompt.CreateService(ctx, client)
 
 	router := gin.Default()
+
 	router.GET("/health", api.GetHealth)
-	router.POST("/prompt", func(c *gin.Context) { api.CreatePrompt(c, us, ps) })
-	router.PUT("/prompt", func(c *gin.Context) { api.QueuePrompt(c, ps) })
-	router.POST("/prompt/:id", func(c *gin.Context) { api.AnswerPrompt(c, ps) })
-	router.GET("/prompt/:id", func(c *gin.Context) { api.GetPrompt(c, ps) })
-	router.GET("/prompt/list", func(c *gin.Context) { api.GetPrompts(c, us, ps) })
+	router.GET("/prompts", func(c *gin.Context) { api.GetPrompts(c, us, ps) })
+	router.POST("/prompts", func(c *gin.Context) { api.CreatePrompt(c, us, ps) })
+	router.PUT("/prompts", func(c *gin.Context) { api.QueuePrompt(c, ps) })
+	router.POST("/prompts/:id", func(c *gin.Context) { api.AnswerPrompt(c, ps) })
+	router.GET("/prompts/:id", func(c *gin.Context) { api.GetPrompt(c, ps) })
 	router.POST("/user", func(c *gin.Context) { api.CreateUser(c, us) })
 
 	// For running in production just use router.Run()
