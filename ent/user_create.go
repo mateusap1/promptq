@@ -28,8 +28,14 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 }
 
 // SetPassword sets the "password" field.
-func (uc *UserCreate) SetPassword(s string) *UserCreate {
-	uc.mutation.SetPassword(s)
+func (uc *UserCreate) SetPassword(b []byte) *UserCreate {
+	uc.mutation.SetPassword(b)
+	return uc
+}
+
+// SetSalt sets the "salt" field.
+func (uc *UserCreate) SetSalt(b []byte) *UserCreate {
+	uc.mutation.SetSalt(b)
 	return uc
 }
 
@@ -111,6 +117,9 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
 	}
+	if _, ok := uc.mutation.Salt(); !ok {
+		return &ValidationError{Name: "salt", err: errors.New(`ent: missing required field "User.salt"`)}
+	}
 	if _, ok := uc.mutation.CreateDate(); !ok {
 		return &ValidationError{Name: "create_date", err: errors.New(`ent: missing required field "User.create_date"`)}
 	}
@@ -145,8 +154,12 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.Username = value
 	}
 	if value, ok := uc.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeString, value)
+		_spec.SetField(user.FieldPassword, field.TypeBytes, value)
 		_node.Password = value
+	}
+	if value, ok := uc.mutation.Salt(); ok {
+		_spec.SetField(user.FieldSalt, field.TypeBytes, value)
+		_node.Salt = value
 	}
 	if value, ok := uc.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)

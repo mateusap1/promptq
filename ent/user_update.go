@@ -44,16 +44,14 @@ func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
 }
 
 // SetPassword sets the "password" field.
-func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
-	uu.mutation.SetPassword(s)
+func (uu *UserUpdate) SetPassword(b []byte) *UserUpdate {
+	uu.mutation.SetPassword(b)
 	return uu
 }
 
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (uu *UserUpdate) SetNillablePassword(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetPassword(*s)
-	}
+// SetSalt sets the "salt" field.
+func (uu *UserUpdate) SetSalt(b []byte) *UserUpdate {
+	uu.mutation.SetSalt(b)
 	return uu
 }
 
@@ -152,7 +150,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeString, value)
+		_spec.SetField(user.FieldPassword, field.TypeBytes, value)
+	}
+	if value, ok := uu.mutation.Salt(); ok {
+		_spec.SetField(user.FieldSalt, field.TypeBytes, value)
 	}
 	if value, ok := uu.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
@@ -237,16 +238,14 @@ func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
 }
 
 // SetPassword sets the "password" field.
-func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
-	uuo.mutation.SetPassword(s)
+func (uuo *UserUpdateOne) SetPassword(b []byte) *UserUpdateOne {
+	uuo.mutation.SetPassword(b)
 	return uuo
 }
 
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillablePassword(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetPassword(*s)
-	}
+// SetSalt sets the "salt" field.
+func (uuo *UserUpdateOne) SetSalt(b []byte) *UserUpdateOne {
+	uuo.mutation.SetSalt(b)
 	return uuo
 }
 
@@ -375,7 +374,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeString, value)
+		_spec.SetField(user.FieldPassword, field.TypeBytes, value)
+	}
+	if value, ok := uuo.mutation.Salt(); ok {
+		_spec.SetField(user.FieldSalt, field.TypeBytes, value)
 	}
 	if value, ok := uuo.mutation.CreateDate(); ok {
 		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)

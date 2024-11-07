@@ -43,7 +43,7 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreateDate is the schema descriptor for create_date field.
-	userDescCreateDate := userFields[2].Descriptor()
+	userDescCreateDate := userFields[3].Descriptor()
 	// user.DefaultCreateDate holds the default value on creation for the create_date field.
 	user.DefaultCreateDate = userDescCreateDate.Default.(func() time.Time)
 }

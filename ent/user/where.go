@@ -61,8 +61,13 @@ func Username(v string) predicate.User {
 }
 
 // Password applies equality check predicate on the "password" field. It's identical to PasswordEQ.
-func Password(v string) predicate.User {
+func Password(v []byte) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPassword, v))
+}
+
+// Salt applies equality check predicate on the "salt" field. It's identical to SaltEQ.
+func Salt(v []byte) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSalt, v))
 }
 
 // CreateDate applies equality check predicate on the "create_date" field. It's identical to CreateDateEQ.
@@ -136,68 +141,83 @@ func UsernameContainsFold(v string) predicate.User {
 }
 
 // PasswordEQ applies the EQ predicate on the "password" field.
-func PasswordEQ(v string) predicate.User {
+func PasswordEQ(v []byte) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPassword, v))
 }
 
 // PasswordNEQ applies the NEQ predicate on the "password" field.
-func PasswordNEQ(v string) predicate.User {
+func PasswordNEQ(v []byte) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldPassword, v))
 }
 
 // PasswordIn applies the In predicate on the "password" field.
-func PasswordIn(vs ...string) predicate.User {
+func PasswordIn(vs ...[]byte) predicate.User {
 	return predicate.User(sql.FieldIn(FieldPassword, vs...))
 }
 
 // PasswordNotIn applies the NotIn predicate on the "password" field.
-func PasswordNotIn(vs ...string) predicate.User {
+func PasswordNotIn(vs ...[]byte) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldPassword, vs...))
 }
 
 // PasswordGT applies the GT predicate on the "password" field.
-func PasswordGT(v string) predicate.User {
+func PasswordGT(v []byte) predicate.User {
 	return predicate.User(sql.FieldGT(FieldPassword, v))
 }
 
 // PasswordGTE applies the GTE predicate on the "password" field.
-func PasswordGTE(v string) predicate.User {
+func PasswordGTE(v []byte) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldPassword, v))
 }
 
 // PasswordLT applies the LT predicate on the "password" field.
-func PasswordLT(v string) predicate.User {
+func PasswordLT(v []byte) predicate.User {
 	return predicate.User(sql.FieldLT(FieldPassword, v))
 }
 
 // PasswordLTE applies the LTE predicate on the "password" field.
-func PasswordLTE(v string) predicate.User {
+func PasswordLTE(v []byte) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldPassword, v))
 }
 
-// PasswordContains applies the Contains predicate on the "password" field.
-func PasswordContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldPassword, v))
+// SaltEQ applies the EQ predicate on the "salt" field.
+func SaltEQ(v []byte) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSalt, v))
 }
 
-// PasswordHasPrefix applies the HasPrefix predicate on the "password" field.
-func PasswordHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldPassword, v))
+// SaltNEQ applies the NEQ predicate on the "salt" field.
+func SaltNEQ(v []byte) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSalt, v))
 }
 
-// PasswordHasSuffix applies the HasSuffix predicate on the "password" field.
-func PasswordHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldPassword, v))
+// SaltIn applies the In predicate on the "salt" field.
+func SaltIn(vs ...[]byte) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSalt, vs...))
 }
 
-// PasswordEqualFold applies the EqualFold predicate on the "password" field.
-func PasswordEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldPassword, v))
+// SaltNotIn applies the NotIn predicate on the "salt" field.
+func SaltNotIn(vs ...[]byte) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSalt, vs...))
 }
 
-// PasswordContainsFold applies the ContainsFold predicate on the "password" field.
-func PasswordContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldPassword, v))
+// SaltGT applies the GT predicate on the "salt" field.
+func SaltGT(v []byte) predicate.User {
+	return predicate.User(sql.FieldGT(FieldSalt, v))
+}
+
+// SaltGTE applies the GTE predicate on the "salt" field.
+func SaltGTE(v []byte) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldSalt, v))
+}
+
+// SaltLT applies the LT predicate on the "salt" field.
+func SaltLT(v []byte) predicate.User {
+	return predicate.User(sql.FieldLT(FieldSalt, v))
+}
+
+// SaltLTE applies the LTE predicate on the "salt" field.
+func SaltLTE(v []byte) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldSalt, v))
 }
 
 // CreateDateEQ applies the EQ predicate on the "create_date" field.

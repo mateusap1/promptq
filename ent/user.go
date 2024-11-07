@@ -20,7 +20,9 @@ type User struct {
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
 	// Password holds the value of the "password" field.
-	Password string `json:"password,omitempty"`
+	Password []byte `json:"password,omitempty"`
+	// Salt holds the value of the "salt" field.
+	Salt []byte `json:"salt,omitempty"`
 	// CreateDate holds the value of the "create_date" field.
 	CreateDate time.Time `json:"create_date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -52,9 +54,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldPassword, user.FieldSalt:
+			values[i] = new([]byte)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldPassword:
+		case user.FieldUsername:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateDate:
 			values[i] = new(sql.NullTime)
@@ -86,10 +90,16 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.Username = value.String
 			}
 		case user.FieldPassword:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field password", values[i])
-			} else if value.Valid {
-				u.Password = value.String
+			} else if value != nil {
+				u.Password = *value
+			}
+		case user.FieldSalt:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field salt", values[i])
+			} else if value != nil {
+				u.Salt = *value
 			}
 		case user.FieldCreateDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -142,7 +152,10 @@ func (u *User) String() string {
 	builder.WriteString(u.Username)
 	builder.WriteString(", ")
 	builder.WriteString("password=")
-	builder.WriteString(u.Password)
+	builder.WriteString(fmt.Sprintf("%v", u.Password))
+	builder.WriteString(", ")
+	builder.WriteString("salt=")
+	builder.WriteString(fmt.Sprintf("%v", u.Salt))
 	builder.WriteString(", ")
 	builder.WriteString("create_date=")
 	builder.WriteString(u.CreateDate.Format(time.ANSIC))

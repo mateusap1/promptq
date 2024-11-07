@@ -18,6 +18,8 @@ const (
 	FieldUsername = "username"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldSalt holds the string denoting the salt field in the database.
+	FieldSalt = "salt"
 	// FieldCreateDate holds the string denoting the create_date field in the database.
 	FieldCreateDate = "create_date"
 	// EdgePromptRequests holds the string denoting the prompt_requests edge name in mutations.
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldID,
 	FieldUsername,
 	FieldPassword,
+	FieldSalt,
 	FieldCreateDate,
 }
 
@@ -67,11 +70,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByUsername orders the results by the username field.
 func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
-}
-
-// ByPassword orders the results by the password field.
-func ByPassword(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPassword, opts...).ToFunc()
 }
 
 // ByCreateDate orders the results by the create_date field.
