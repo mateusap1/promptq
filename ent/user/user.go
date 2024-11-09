@@ -14,18 +14,37 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUsername holds the string denoting the username field in the database.
-	FieldUsername = "username"
-	// FieldPassword holds the string denoting the password field in the database.
-	FieldPassword = "password"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldPasswordHash holds the string denoting the password_hash field in the database.
+	FieldPasswordHash = "password_hash"
 	// FieldSalt holds the string denoting the salt field in the database.
 	FieldSalt = "salt"
-	// FieldCreateDate holds the string denoting the create_date field in the database.
-	FieldCreateDate = "create_date"
+	// FieldFullName holds the string denoting the full_name field in the database.
+	FieldFullName = "full_name"
+	// FieldEmailVerified holds the string denoting the email_verified field in the database.
+	FieldEmailVerified = "email_verified"
+	// FieldResetToken holds the string denoting the reset_token field in the database.
+	FieldResetToken = "reset_token"
+	// FieldResetTokenExpires holds the string denoting the reset_token_expires field in the database.
+	FieldResetTokenExpires = "reset_token_expires"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
+	// EdgeSessions holds the string denoting the sessions edge name in mutations.
+	EdgeSessions = "sessions"
 	// EdgePromptRequests holds the string denoting the prompt_requests edge name in mutations.
 	EdgePromptRequests = "prompt_requests"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// SessionsTable is the table that holds the sessions relation/edge.
+	SessionsTable = "sessions"
+	// SessionsInverseTable is the table name for the Session entity.
+	// It exists in this package in order to avoid circular dependency with the "session" package.
+	SessionsInverseTable = "sessions"
+	// SessionsColumn is the table column denoting the sessions relation/edge.
+	SessionsColumn = "user_sessions"
 	// PromptRequestsTable is the table that holds the prompt_requests relation/edge.
 	PromptRequestsTable = "prompt_requests"
 	// PromptRequestsInverseTable is the table name for the PromptRequest entity.
@@ -38,10 +57,15 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldUsername,
-	FieldPassword,
+	FieldEmail,
+	FieldPasswordHash,
 	FieldSalt,
-	FieldCreateDate,
+	FieldFullName,
+	FieldEmailVerified,
+	FieldResetToken,
+	FieldResetTokenExpires,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -55,8 +79,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultCreateDate holds the default value on creation for the "create_date" field.
-	DefaultCreateDate func() time.Time
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -67,14 +93,53 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByUsername orders the results by the username field.
-func ByUsername(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUsername, opts...).ToFunc()
+// ByEmail orders the results by the email field.
+func ByEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmail, opts...).ToFunc()
 }
 
-// ByCreateDate orders the results by the create_date field.
-func ByCreateDate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreateDate, opts...).ToFunc()
+// ByFullName orders the results by the full_name field.
+func ByFullName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFullName, opts...).ToFunc()
+}
+
+// ByEmailVerified orders the results by the email_verified field.
+func ByEmailVerified(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmailVerified, opts...).ToFunc()
+}
+
+// ByResetToken orders the results by the reset_token field.
+func ByResetToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResetToken, opts...).ToFunc()
+}
+
+// ByResetTokenExpires orders the results by the reset_token_expires field.
+func ByResetTokenExpires(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResetTokenExpires, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// BySessionsCount orders the results by sessions count.
+func BySessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSessionsStep(), opts...)
+	}
+}
+
+// BySessions orders the results by sessions terms.
+func BySessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
 }
 
 // ByPromptRequestsCount orders the results by prompt_requests count.
@@ -89,6 +154,13 @@ func ByPromptRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newPromptRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
+	)
 }
 func newPromptRequestsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

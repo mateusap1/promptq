@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/session"
 	"github.com/mateusap1/promptq/ent/user"
 )
 
@@ -23,6 +24,7 @@ type UserQuery struct {
 	order              []user.OrderOption
 	inters             []Interceptor
 	predicates         []predicate.User
+	withSessions       *SessionQuery
 	withPromptRequests *PromptRequestQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -58,6 +60,28 @@ func (uq *UserQuery) Unique(unique bool) *UserQuery {
 func (uq *UserQuery) Order(o ...user.OrderOption) *UserQuery {
 	uq.order = append(uq.order, o...)
 	return uq
+}
+
+// QuerySessions chains the current query on the "sessions" edge.
+func (uq *UserQuery) QuerySessions() *SessionQuery {
+	query := (&SessionClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(session.Table, session.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SessionsTable, user.SessionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryPromptRequests chains the current query on the "prompt_requests" edge.
@@ -274,11 +298,23 @@ func (uq *UserQuery) Clone() *UserQuery {
 		order:              append([]user.OrderOption{}, uq.order...),
 		inters:             append([]Interceptor{}, uq.inters...),
 		predicates:         append([]predicate.User{}, uq.predicates...),
+		withSessions:       uq.withSessions.Clone(),
 		withPromptRequests: uq.withPromptRequests.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
 	}
+}
+
+// WithSessions tells the query-builder to eager-load the nodes that are connected to
+// the "sessions" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithSessions(opts ...func(*SessionQuery)) *UserQuery {
+	query := (&SessionClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withSessions = query
+	return uq
 }
 
 // WithPromptRequests tells the query-builder to eager-load the nodes that are connected to
@@ -298,12 +334,12 @@ func (uq *UserQuery) WithPromptRequests(opts ...func(*PromptRequestQuery)) *User
 // Example:
 //
 //	var v []struct {
-//		Username string `json:"username,omitempty"`
+//		Email string `json:"email,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		GroupBy(user.FieldUsername).
+//		GroupBy(user.FieldEmail).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
@@ -321,11 +357,11 @@ func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Username string `json:"username,omitempty"`
+//		Email string `json:"email,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		Select(user.FieldUsername).
+//		Select(user.FieldEmail).
 //		Scan(ctx, &v)
 func (uq *UserQuery) Select(fields ...string) *UserSelect {
 	uq.ctx.Fields = append(uq.ctx.Fields, fields...)
@@ -370,7 +406,8 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			uq.withSessions != nil,
 			uq.withPromptRequests != nil,
 		}
 	)
@@ -392,6 +429,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := uq.withSessions; query != nil {
+		if err := uq.loadSessions(ctx, query, nodes,
+			func(n *User) { n.Edges.Sessions = []*Session{} },
+			func(n *User, e *Session) { n.Edges.Sessions = append(n.Edges.Sessions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := uq.withPromptRequests; query != nil {
 		if err := uq.loadPromptRequests(ctx, query, nodes,
 			func(n *User) { n.Edges.PromptRequests = []*PromptRequest{} },
@@ -402,6 +446,37 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	return nodes, nil
 }
 
+func (uq *UserQuery) loadSessions(ctx context.Context, query *SessionQuery, nodes []*User, init func(*User), assign func(*User, *Session)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.SessionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_sessions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_sessions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_sessions" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (uq *UserQuery) loadPromptRequests(ctx context.Context, query *PromptRequestQuery, nodes []*User, init func(*User), assign func(*User, *PromptRequest)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*User)

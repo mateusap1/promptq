@@ -9,6 +9,7 @@ import (
 	"github.com/mateusap1/promptq/ent/promptrequest"
 	"github.com/mateusap1/promptq/ent/promptresponse"
 	"github.com/mateusap1/promptq/ent/schema"
+	"github.com/mateusap1/promptq/ent/session"
 	"github.com/mateusap1/promptq/ent/user"
 )
 
@@ -40,10 +41,20 @@ func init() {
 	promptresponseDescCreateDate := promptresponseFields[1].Descriptor()
 	// promptresponse.DefaultCreateDate holds the default value on creation for the create_date field.
 	promptresponse.DefaultCreateDate = promptresponseDescCreateDate.Default.(func() time.Time)
+	sessionFields := schema.Session{}.Fields()
+	_ = sessionFields
+	// sessionDescCreatedAt is the schema descriptor for created_at field.
+	sessionDescCreatedAt := sessionFields[4].Descriptor()
+	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
+	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescCreateDate is the schema descriptor for create_date field.
-	userDescCreateDate := userFields[3].Descriptor()
-	// user.DefaultCreateDate holds the default value on creation for the create_date field.
-	user.DefaultCreateDate = userDescCreateDate.Default.(func() time.Time)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[7].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescUpdatedAt is the schema descriptor for updated_at field.
+	userDescUpdatedAt := userFields[8].Descriptor()
+	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

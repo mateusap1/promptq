@@ -17,14 +17,24 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Username holds the value of the "username" field.
-	Username string `json:"username,omitempty"`
-	// Password holds the value of the "password" field.
-	Password []byte `json:"password,omitempty"`
+	// Email holds the value of the "email" field.
+	Email string `json:"email,omitempty"`
+	// PasswordHash holds the value of the "password_hash" field.
+	PasswordHash []byte `json:"password_hash,omitempty"`
 	// Salt holds the value of the "salt" field.
 	Salt []byte `json:"salt,omitempty"`
-	// CreateDate holds the value of the "create_date" field.
-	CreateDate time.Time `json:"create_date,omitempty"`
+	// FullName holds the value of the "full_name" field.
+	FullName string `json:"full_name,omitempty"`
+	// EmailVerified holds the value of the "email_verified" field.
+	EmailVerified bool `json:"email_verified,omitempty"`
+	// ResetToken holds the value of the "reset_token" field.
+	ResetToken *string `json:"reset_token,omitempty"`
+	// ResetTokenExpires holds the value of the "reset_token_expires" field.
+	ResetTokenExpires *time.Time `json:"reset_token_expires,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -33,17 +43,28 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
+	// Sessions holds the value of the sessions edge.
+	Sessions []*Session `json:"sessions,omitempty"`
 	// PromptRequests holds the value of the prompt_requests edge.
 	PromptRequests []*PromptRequest `json:"prompt_requests,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// SessionsOrErr returns the Sessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SessionsOrErr() ([]*Session, error) {
+	if e.loadedTypes[0] {
+		return e.Sessions, nil
+	}
+	return nil, &NotLoadedError{edge: "sessions"}
 }
 
 // PromptRequestsOrErr returns the PromptRequests value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) PromptRequestsOrErr() ([]*PromptRequest, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.PromptRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "prompt_requests"}
@@ -54,13 +75,15 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldPassword, user.FieldSalt:
+		case user.FieldPasswordHash, user.FieldSalt:
 			values[i] = new([]byte)
+		case user.FieldEmailVerified:
+			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername:
+		case user.FieldEmail, user.FieldFullName, user.FieldResetToken:
 			values[i] = new(sql.NullString)
-		case user.FieldCreateDate:
+		case user.FieldResetTokenExpires, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -83,17 +106,17 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			u.ID = int(value.Int64)
-		case user.FieldUsername:
+		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field username", values[i])
+				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
-				u.Username = value.String
+				u.Email = value.String
 			}
-		case user.FieldPassword:
+		case user.FieldPasswordHash:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field password", values[i])
+				return fmt.Errorf("unexpected type %T for field password_hash", values[i])
 			} else if value != nil {
-				u.Password = *value
+				u.PasswordHash = *value
 			}
 		case user.FieldSalt:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -101,11 +124,43 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				u.Salt = *value
 			}
-		case user.FieldCreateDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_date", values[i])
+		case user.FieldFullName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field full_name", values[i])
 			} else if value.Valid {
-				u.CreateDate = value.Time
+				u.FullName = value.String
+			}
+		case user.FieldEmailVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field email_verified", values[i])
+			} else if value.Valid {
+				u.EmailVerified = value.Bool
+			}
+		case user.FieldResetToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field reset_token", values[i])
+			} else if value.Valid {
+				u.ResetToken = new(string)
+				*u.ResetToken = value.String
+			}
+		case user.FieldResetTokenExpires:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field reset_token_expires", values[i])
+			} else if value.Valid {
+				u.ResetTokenExpires = new(time.Time)
+				*u.ResetTokenExpires = value.Time
+			}
+		case user.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				u.CreatedAt = value.Time
+			}
+		case user.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				u.UpdatedAt = value.Time
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -118,6 +173,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
+}
+
+// QuerySessions queries the "sessions" edge of the User entity.
+func (u *User) QuerySessions() *SessionQuery {
+	return NewUserClient(u.config).QuerySessions(u)
 }
 
 // QueryPromptRequests queries the "prompt_requests" edge of the User entity.
@@ -148,17 +208,36 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
-	builder.WriteString("username=")
-	builder.WriteString(u.Username)
+	builder.WriteString("email=")
+	builder.WriteString(u.Email)
 	builder.WriteString(", ")
-	builder.WriteString("password=")
-	builder.WriteString(fmt.Sprintf("%v", u.Password))
+	builder.WriteString("password_hash=")
+	builder.WriteString(fmt.Sprintf("%v", u.PasswordHash))
 	builder.WriteString(", ")
 	builder.WriteString("salt=")
 	builder.WriteString(fmt.Sprintf("%v", u.Salt))
 	builder.WriteString(", ")
-	builder.WriteString("create_date=")
-	builder.WriteString(u.CreateDate.Format(time.ANSIC))
+	builder.WriteString("full_name=")
+	builder.WriteString(u.FullName)
+	builder.WriteString(", ")
+	builder.WriteString("email_verified=")
+	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))
+	builder.WriteString(", ")
+	if v := u.ResetToken; v != nil {
+		builder.WriteString("reset_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := u.ResetTokenExpires; v != nil {
+		builder.WriteString("reset_token_expires=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

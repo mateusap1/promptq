@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/predicate"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/session"
 	"github.com/mateusap1/promptq/ent/user"
 )
 
@@ -29,23 +30,23 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
-// SetUsername sets the "username" field.
-func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
-	uu.mutation.SetUsername(s)
+// SetEmail sets the "email" field.
+func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
+	uu.mutation.SetEmail(s)
 	return uu
 }
 
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableEmail(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetUsername(*s)
+		uu.SetEmail(*s)
 	}
 	return uu
 }
 
-// SetPassword sets the "password" field.
-func (uu *UserUpdate) SetPassword(b []byte) *UserUpdate {
-	uu.mutation.SetPassword(b)
+// SetPasswordHash sets the "password_hash" field.
+func (uu *UserUpdate) SetPasswordHash(b []byte) *UserUpdate {
+	uu.mutation.SetPasswordHash(b)
 	return uu
 }
 
@@ -55,18 +56,95 @@ func (uu *UserUpdate) SetSalt(b []byte) *UserUpdate {
 	return uu
 }
 
-// SetCreateDate sets the "create_date" field.
-func (uu *UserUpdate) SetCreateDate(t time.Time) *UserUpdate {
-	uu.mutation.SetCreateDate(t)
+// SetFullName sets the "full_name" field.
+func (uu *UserUpdate) SetFullName(s string) *UserUpdate {
+	uu.mutation.SetFullName(s)
 	return uu
 }
 
-// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableCreateDate(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetCreateDate(*t)
+// SetNillableFullName sets the "full_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFullName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetFullName(*s)
 	}
 	return uu
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uu *UserUpdate) SetEmailVerified(b bool) *UserUpdate {
+	uu.mutation.SetEmailVerified(b)
+	return uu
+}
+
+// SetNillableEmailVerified sets the "email_verified" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableEmailVerified(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetEmailVerified(*b)
+	}
+	return uu
+}
+
+// SetResetToken sets the "reset_token" field.
+func (uu *UserUpdate) SetResetToken(s string) *UserUpdate {
+	uu.mutation.SetResetToken(s)
+	return uu
+}
+
+// SetNillableResetToken sets the "reset_token" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableResetToken(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetResetToken(*s)
+	}
+	return uu
+}
+
+// SetResetTokenExpires sets the "reset_token_expires" field.
+func (uu *UserUpdate) SetResetTokenExpires(t time.Time) *UserUpdate {
+	uu.mutation.SetResetTokenExpires(t)
+	return uu
+}
+
+// SetNillableResetTokenExpires sets the "reset_token_expires" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableResetTokenExpires(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetResetTokenExpires(*t)
+	}
+	return uu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uu *UserUpdate) SetCreatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetCreatedAt(t)
+	return uu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetCreatedAt(*t)
+	}
+	return uu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetUpdatedAt(t)
+	return uu
+}
+
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uu *UserUpdate) AddSessionIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddSessionIDs(ids...)
+	return uu
+}
+
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uu *UserUpdate) AddSessions(s ...*Session) *UserUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.AddSessionIDs(ids...)
 }
 
 // AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by IDs.
@@ -87,6 +165,27 @@ func (uu *UserUpdate) AddPromptRequests(p ...*PromptRequest) *UserUpdate {
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearSessions clears all "sessions" edges to the Session entity.
+func (uu *UserUpdate) ClearSessions() *UserUpdate {
+	uu.mutation.ClearSessions()
+	return uu
+}
+
+// RemoveSessionIDs removes the "sessions" edge to Session entities by IDs.
+func (uu *UserUpdate) RemoveSessionIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveSessionIDs(ids...)
+	return uu
+}
+
+// RemoveSessions removes "sessions" edges to Session entities.
+func (uu *UserUpdate) RemoveSessions(s ...*Session) *UserUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.RemoveSessionIDs(ids...)
 }
 
 // ClearPromptRequests clears all "prompt_requests" edges to the PromptRequest entity.
@@ -112,6 +211,7 @@ func (uu *UserUpdate) RemovePromptRequests(p ...*PromptRequest) *UserUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
+	uu.defaults()
 	return withHooks(ctx, uu.sqlSave, uu.mutation, uu.hooks)
 }
 
@@ -137,6 +237,14 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uu *UserUpdate) defaults() {
+	if _, ok := uu.mutation.UpdatedAt(); !ok {
+		v := user.UpdateDefaultUpdatedAt()
+		uu.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
 	if ps := uu.mutation.predicates; len(ps) > 0 {
@@ -146,17 +254,77 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := uu.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	if value, ok := uu.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeBytes, value)
+	if value, ok := uu.mutation.PasswordHash(); ok {
+		_spec.SetField(user.FieldPasswordHash, field.TypeBytes, value)
 	}
 	if value, ok := uu.mutation.Salt(); ok {
 		_spec.SetField(user.FieldSalt, field.TypeBytes, value)
 	}
-	if value, ok := uu.mutation.CreateDate(); ok {
-		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
+	if value, ok := uu.mutation.FullName(); ok {
+		_spec.SetField(user.FieldFullName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.ResetToken(); ok {
+		_spec.SetField(user.FieldResetToken, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.ResetTokenExpires(); ok {
+		_spec.SetField(user.FieldResetTokenExpires, field.TypeTime, value)
+	}
+	if value, ok := uu.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := uu.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uu.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !uu.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if uu.mutation.PromptRequestsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -223,23 +391,23 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
-// SetUsername sets the "username" field.
-func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
-	uuo.mutation.SetUsername(s)
+// SetEmail sets the "email" field.
+func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
+	uuo.mutation.SetEmail(s)
 	return uuo
 }
 
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableEmail(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetUsername(*s)
+		uuo.SetEmail(*s)
 	}
 	return uuo
 }
 
-// SetPassword sets the "password" field.
-func (uuo *UserUpdateOne) SetPassword(b []byte) *UserUpdateOne {
-	uuo.mutation.SetPassword(b)
+// SetPasswordHash sets the "password_hash" field.
+func (uuo *UserUpdateOne) SetPasswordHash(b []byte) *UserUpdateOne {
+	uuo.mutation.SetPasswordHash(b)
 	return uuo
 }
 
@@ -249,18 +417,95 @@ func (uuo *UserUpdateOne) SetSalt(b []byte) *UserUpdateOne {
 	return uuo
 }
 
-// SetCreateDate sets the "create_date" field.
-func (uuo *UserUpdateOne) SetCreateDate(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetCreateDate(t)
+// SetFullName sets the "full_name" field.
+func (uuo *UserUpdateOne) SetFullName(s string) *UserUpdateOne {
+	uuo.mutation.SetFullName(s)
 	return uuo
 }
 
-// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableCreateDate(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetCreateDate(*t)
+// SetNillableFullName sets the "full_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFullName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetFullName(*s)
 	}
 	return uuo
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uuo *UserUpdateOne) SetEmailVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetEmailVerified(b)
+	return uuo
+}
+
+// SetNillableEmailVerified sets the "email_verified" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableEmailVerified(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetEmailVerified(*b)
+	}
+	return uuo
+}
+
+// SetResetToken sets the "reset_token" field.
+func (uuo *UserUpdateOne) SetResetToken(s string) *UserUpdateOne {
+	uuo.mutation.SetResetToken(s)
+	return uuo
+}
+
+// SetNillableResetToken sets the "reset_token" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableResetToken(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetResetToken(*s)
+	}
+	return uuo
+}
+
+// SetResetTokenExpires sets the "reset_token_expires" field.
+func (uuo *UserUpdateOne) SetResetTokenExpires(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetResetTokenExpires(t)
+	return uuo
+}
+
+// SetNillableResetTokenExpires sets the "reset_token_expires" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableResetTokenExpires(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetResetTokenExpires(*t)
+	}
+	return uuo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uuo *UserUpdateOne) SetCreatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetCreatedAt(t)
+	return uuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetCreatedAt(*t)
+	}
+	return uuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetUpdatedAt(t)
+	return uuo
+}
+
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uuo *UserUpdateOne) AddSessionIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddSessionIDs(ids...)
+	return uuo
+}
+
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uuo *UserUpdateOne) AddSessions(s ...*Session) *UserUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.AddSessionIDs(ids...)
 }
 
 // AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by IDs.
@@ -281,6 +526,27 @@ func (uuo *UserUpdateOne) AddPromptRequests(p ...*PromptRequest) *UserUpdateOne 
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearSessions clears all "sessions" edges to the Session entity.
+func (uuo *UserUpdateOne) ClearSessions() *UserUpdateOne {
+	uuo.mutation.ClearSessions()
+	return uuo
+}
+
+// RemoveSessionIDs removes the "sessions" edge to Session entities by IDs.
+func (uuo *UserUpdateOne) RemoveSessionIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveSessionIDs(ids...)
+	return uuo
+}
+
+// RemoveSessions removes "sessions" edges to Session entities.
+func (uuo *UserUpdateOne) RemoveSessions(s ...*Session) *UserUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.RemoveSessionIDs(ids...)
 }
 
 // ClearPromptRequests clears all "prompt_requests" edges to the PromptRequest entity.
@@ -319,6 +585,7 @@ func (uuo *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne 
 
 // Save executes the query and returns the updated User entity.
 func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
+	uuo.defaults()
 	return withHooks(ctx, uuo.sqlSave, uuo.mutation, uuo.hooks)
 }
 
@@ -341,6 +608,14 @@ func (uuo *UserUpdateOne) Exec(ctx context.Context) error {
 func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	if err := uuo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (uuo *UserUpdateOne) defaults() {
+	if _, ok := uuo.mutation.UpdatedAt(); !ok {
+		v := user.UpdateDefaultUpdatedAt()
+		uuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -370,17 +645,77 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if value, ok := uuo.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	if value, ok := uuo.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeBytes, value)
+	if value, ok := uuo.mutation.PasswordHash(); ok {
+		_spec.SetField(user.FieldPasswordHash, field.TypeBytes, value)
 	}
 	if value, ok := uuo.mutation.Salt(); ok {
 		_spec.SetField(user.FieldSalt, field.TypeBytes, value)
 	}
-	if value, ok := uuo.mutation.CreateDate(); ok {
-		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
+	if value, ok := uuo.mutation.FullName(); ok {
+		_spec.SetField(user.FieldFullName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.ResetToken(); ok {
+		_spec.SetField(user.FieldResetToken, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.ResetTokenExpires(); ok {
+		_spec.SetField(user.FieldResetTokenExpires, field.TypeTime, value)
+	}
+	if value, ok := uuo.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := uuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uuo.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !uuo.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if uuo.mutation.PromptRequestsCleared() {
 		edge := &sqlgraph.EdgeSpec{

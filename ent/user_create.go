@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/mateusap1/promptq/ent/promptrequest"
+	"github.com/mateusap1/promptq/ent/session"
 	"github.com/mateusap1/promptq/ent/user"
 )
 
@@ -21,15 +22,15 @@ type UserCreate struct {
 	hooks    []Hook
 }
 
-// SetUsername sets the "username" field.
-func (uc *UserCreate) SetUsername(s string) *UserCreate {
-	uc.mutation.SetUsername(s)
+// SetEmail sets the "email" field.
+func (uc *UserCreate) SetEmail(s string) *UserCreate {
+	uc.mutation.SetEmail(s)
 	return uc
 }
 
-// SetPassword sets the "password" field.
-func (uc *UserCreate) SetPassword(b []byte) *UserCreate {
-	uc.mutation.SetPassword(b)
+// SetPasswordHash sets the "password_hash" field.
+func (uc *UserCreate) SetPasswordHash(b []byte) *UserCreate {
+	uc.mutation.SetPasswordHash(b)
 	return uc
 }
 
@@ -39,18 +40,63 @@ func (uc *UserCreate) SetSalt(b []byte) *UserCreate {
 	return uc
 }
 
-// SetCreateDate sets the "create_date" field.
-func (uc *UserCreate) SetCreateDate(t time.Time) *UserCreate {
-	uc.mutation.SetCreateDate(t)
+// SetFullName sets the "full_name" field.
+func (uc *UserCreate) SetFullName(s string) *UserCreate {
+	uc.mutation.SetFullName(s)
 	return uc
 }
 
-// SetNillableCreateDate sets the "create_date" field if the given value is not nil.
-func (uc *UserCreate) SetNillableCreateDate(t *time.Time) *UserCreate {
+// SetEmailVerified sets the "email_verified" field.
+func (uc *UserCreate) SetEmailVerified(b bool) *UserCreate {
+	uc.mutation.SetEmailVerified(b)
+	return uc
+}
+
+// SetResetToken sets the "reset_token" field.
+func (uc *UserCreate) SetResetToken(s string) *UserCreate {
+	uc.mutation.SetResetToken(s)
+	return uc
+}
+
+// SetResetTokenExpires sets the "reset_token_expires" field.
+func (uc *UserCreate) SetResetTokenExpires(t time.Time) *UserCreate {
+	uc.mutation.SetResetTokenExpires(t)
+	return uc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetCreatedAt(t)
+	return uc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	if t != nil {
-		uc.SetCreateDate(*t)
+		uc.SetCreatedAt(*t)
 	}
 	return uc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (uc *UserCreate) SetUpdatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetUpdatedAt(t)
+	return uc
+}
+
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uc *UserCreate) AddSessionIDs(ids ...int) *UserCreate {
+	uc.mutation.AddSessionIDs(ids...)
+	return uc
+}
+
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddSessionIDs(ids...)
 }
 
 // AddPromptRequestIDs adds the "prompt_requests" edge to the PromptRequest entity by IDs.
@@ -103,25 +149,40 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() {
-	if _, ok := uc.mutation.CreateDate(); !ok {
-		v := user.DefaultCreateDate()
-		uc.mutation.SetCreateDate(v)
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		v := user.DefaultCreatedAt()
+		uc.mutation.SetCreatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
+	if _, ok := uc.mutation.Email(); !ok {
+		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
-	if _, ok := uc.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
+	if _, ok := uc.mutation.PasswordHash(); !ok {
+		return &ValidationError{Name: "password_hash", err: errors.New(`ent: missing required field "User.password_hash"`)}
 	}
 	if _, ok := uc.mutation.Salt(); !ok {
 		return &ValidationError{Name: "salt", err: errors.New(`ent: missing required field "User.salt"`)}
 	}
-	if _, ok := uc.mutation.CreateDate(); !ok {
-		return &ValidationError{Name: "create_date", err: errors.New(`ent: missing required field "User.create_date"`)}
+	if _, ok := uc.mutation.FullName(); !ok {
+		return &ValidationError{Name: "full_name", err: errors.New(`ent: missing required field "User.full_name"`)}
+	}
+	if _, ok := uc.mutation.EmailVerified(); !ok {
+		return &ValidationError{Name: "email_verified", err: errors.New(`ent: missing required field "User.email_verified"`)}
+	}
+	if _, ok := uc.mutation.ResetToken(); !ok {
+		return &ValidationError{Name: "reset_token", err: errors.New(`ent: missing required field "User.reset_token"`)}
+	}
+	if _, ok := uc.mutation.ResetTokenExpires(); !ok {
+		return &ValidationError{Name: "reset_token_expires", err: errors.New(`ent: missing required field "User.reset_token_expires"`)}
+	}
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+	}
+	if _, ok := uc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
 	}
 	return nil
 }
@@ -149,21 +210,57 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node = &User{config: uc.config}
 		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
 	)
-	if value, ok := uc.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
-		_node.Username = value
+	if value, ok := uc.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+		_node.Email = value
 	}
-	if value, ok := uc.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeBytes, value)
-		_node.Password = value
+	if value, ok := uc.mutation.PasswordHash(); ok {
+		_spec.SetField(user.FieldPasswordHash, field.TypeBytes, value)
+		_node.PasswordHash = value
 	}
 	if value, ok := uc.mutation.Salt(); ok {
 		_spec.SetField(user.FieldSalt, field.TypeBytes, value)
 		_node.Salt = value
 	}
-	if value, ok := uc.mutation.CreateDate(); ok {
-		_spec.SetField(user.FieldCreateDate, field.TypeTime, value)
-		_node.CreateDate = value
+	if value, ok := uc.mutation.FullName(); ok {
+		_spec.SetField(user.FieldFullName, field.TypeString, value)
+		_node.FullName = value
+	}
+	if value, ok := uc.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+		_node.EmailVerified = value
+	}
+	if value, ok := uc.mutation.ResetToken(); ok {
+		_spec.SetField(user.FieldResetToken, field.TypeString, value)
+		_node.ResetToken = &value
+	}
+	if value, ok := uc.mutation.ResetTokenExpires(); ok {
+		_spec.SetField(user.FieldResetTokenExpires, field.TypeTime, value)
+		_node.ResetTokenExpires = &value
+	}
+	if value, ok := uc.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := uc.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.PromptRequestsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
