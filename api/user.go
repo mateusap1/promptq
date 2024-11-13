@@ -60,8 +60,8 @@ func SignUp(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	// Send confirmation e-mail
-	if err := utils.SendConfirmationEmail(confirmToken); err != nil {
+	// Send validation e-mail
+	if err := utils.SendValidationEmail(confirmToken); err != nil {
 		log.Fatal(err)
 		return
 	}

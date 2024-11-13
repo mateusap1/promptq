@@ -119,7 +119,7 @@ func EncodePassword(password string) (encodedPassword string) {
 	return encodeHash(hash, salt, params)
 }
 
-func GenerateConfirmToken() (confirmToken string, err error) {
+func GenerateValidateToken() (validateToken string, err error) {
 	token, err := generateRand(128)
 	if err != nil {
 		return "", err

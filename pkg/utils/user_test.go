@@ -47,14 +47,14 @@ func TestEmailAlreadyExists(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	confirmToken, err := CreateUser(db, "charlie@email.com", "")
+	validateToken, err := CreateUser(db, "charlie@email.com", "")
 	assert.Nil(t, err)
 
-	var confirmToken2 string
-	err = db.QueryRow("SELECT confirm_token FROM users WHERE email=$1;", "charlie@email.com").Scan(&confirmToken2)
+	var validateToken2 string
+	err = db.QueryRow("SELECT validate_token FROM users WHERE email=$1;", "charlie@email.com").Scan(&validateToken2)
 	assert.Nil(t, err, "user was not created")
 
-	assert.Equal(t, confirmToken2, confirmToken, "token returned is different")
+	assert.Equal(t, validateToken2, validateToken, "token returned is different")
 }
 
 func setup() {
@@ -66,8 +66,8 @@ func setup() {
 			email VARCHAR NOT NULL,
 			password_hash VARCHAR NOT NULL,
 			email_verified BOOLEAN DEFAULT FALSE NOT NULL,
-			confirm_token VARCHAR NULL,
-			confirm_token_expires TIMESTAMP NULL,
+			validate_token VARCHAR NULL,
+			validate_token_expires TIMESTAMP NULL,
 			reset_token VARCHAR NULL,
 			reset_token_expires TIMESTAMP NULL,
 			created_at TIMESTAMP DEFAULT NOW,

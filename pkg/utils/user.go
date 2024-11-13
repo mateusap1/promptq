@@ -75,8 +75,8 @@ func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
 	}
 }
 
-func CreateUser(db *sql.DB, email, passwordHash string) (confirmToken string, err error) {
-	confirmToken, err = GenerateConfirmToken()
+func CreateUser(db *sql.DB, email, passwordHash string) (validateToken string, err error) {
+	validateToken, err = GenerateValidateToken()
 	if err != nil {
 		return "", err
 	}
@@ -84,16 +84,16 @@ func CreateUser(db *sql.DB, email, passwordHash string) (confirmToken string, er
 	confirmDuration := 24 * time.Hour
 	currentTime := time.Now().UTC()
 
-	query := "INSERT INTO users (email, password_hash, confirm_token, confirm_token_expires) VALUES ($1, $2, $3, $4)"
-	if _, err := db.Exec(query, email, passwordHash, confirmToken, currentTime.Add(confirmDuration)); err != nil {
+	query := "INSERT INTO users (email, password_hash, validate_token, validate_token_expires) VALUES ($1, $2, $3, $4)"
+	if _, err := db.Exec(query, email, passwordHash, validateToken, currentTime.Add(confirmDuration)); err != nil {
 		return "", err
 	}
 
-	return confirmToken, nil
+	return validateToken, nil
 }
 
-func SendConfirmationEmail(confirmToken string) error {
-	log.Printf("Sending confirmation e-mail with token %v...\n", confirmToken)
+func SendValidationEmail(confirmToken string) error {
+	log.Printf("Sending validation e-mail with token %v...\n", confirmToken)
 
 	return nil
 }
