@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -12,15 +11,15 @@ import (
 )
 
 var (
-	ErrEmailExists           = errors.New("email taken")
-	ErrInvalidPasswordFormat = errors.New("invalid password format or weak password")
-	ErrInvalidEmailFormat    = errors.New("invalid email format")
-	ErrInvalidFormat         = errors.New("invalid request format")
+	ErrEmailExists           = "email taken"
+	ErrInvalidPasswordFormat = "invalid password format or weak password"
+	ErrInvalidEmailFormat    = "invalid email format"
+	ErrInvalidFormat         = "invalid request format"
 )
 
 type SignUpForm struct {
-	Email    string
-	Password string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func SignUp(c *gin.Context, db *sql.DB) {

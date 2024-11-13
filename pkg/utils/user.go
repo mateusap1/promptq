@@ -58,7 +58,7 @@ func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
 	// Need to handle case where email exists but has not been confirmed
 	// Not handling it right now
 
-	rows, err := db.Query("SELECT id FROM user WHERE email=$1;", email)
+	rows, err := db.Query("SELECT id FROM users WHERE email=$1;", email)
 	if err != nil {
 		return false, err
 	}
@@ -84,7 +84,7 @@ func CreateUser(db *sql.DB, email, passwordHash string) (confirmToken string, er
 	confirmDuration := 24 * time.Hour
 	currentTime := time.Now().UTC()
 
-	query := "INSERT INTO user (email, password_hash, confirm_token, confirm_token_expires) VALUES ($1, $2, $3, $4)"
+	query := "INSERT INTO users (email, password_hash, confirm_token, confirm_token_expires) VALUES ($1, $2, $3, $4)"
 	if _, err := db.Exec(query, email, passwordHash, confirmToken, currentTime.Add(confirmDuration)); err != nil {
 		return "", err
 	}

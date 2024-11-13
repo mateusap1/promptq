@@ -32,7 +32,7 @@ func TestValidPasswordFormat(t *testing.T) {
 
 func TestEmailAlreadyExists(t *testing.T) {
 	if _, err := db.Exec(`
-		INSERT INTO user (email, password_hash) VALUES ($1, $2);
+		INSERT INTO users (email, password_hash) VALUES ($1, $2);
 	`, "alice@email.com", ""); err != nil {
 		log.Fatal("Error inserting user:", err)
 	}
@@ -51,7 +51,7 @@ func TestCreateUser(t *testing.T) {
 	assert.Nil(t, err)
 
 	var confirmToken2 string
-	err = db.QueryRow("SELECT confirm_token FROM user WHERE email=$1;", "charlie@email.com").Scan(&confirmToken2)
+	err = db.QueryRow("SELECT confirm_token FROM users WHERE email=$1;", "charlie@email.com").Scan(&confirmToken2)
 	assert.Nil(t, err, "user was not created")
 
 	assert.Equal(t, confirmToken2, confirmToken, "token returned is different")
@@ -61,7 +61,7 @@ func setup() {
 	db = OpenSQLite(":memory:")
 
 	if _, err := db.Exec(`
-        CREATE TABLE user (
+        CREATE TABLE users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			email VARCHAR NOT NULL,
 			password_hash VARCHAR NOT NULL,

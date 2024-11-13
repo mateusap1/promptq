@@ -1,5 +1,5 @@
-CREATE TABLE user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
     email VARCHAR NOT NULL,
     password_hash VARCHAR NOT NULL,
     email_verified BOOLEAN DEFAULT FALSE NOT NULL,
@@ -7,6 +7,6 @@ CREATE TABLE user (
     confirm_token_expires TIMESTAMP NULL,
     reset_token VARCHAR NULL,
     reset_token_expires TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT NOW,
-    updated_at TIMESTAMP DEFAULT NOW
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );

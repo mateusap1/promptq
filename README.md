@@ -6,7 +6,7 @@ In scenarios where it is not desired to publically expose the server running the
 
 ## Running
 ```
-$ go run main.go
+$ go run cmd/main.go
 ```
 
 ## Testing
@@ -14,3 +14,18 @@ $ go run main.go
 $ go test ./pkg/...
 $ go test -v ./pkg/...
 ```
+
+## Troubleshooting
+
+If you receive a database ping error like this one:
+```
+Database ping failed with: pq: SSL is not enabled on the server exit status 1
+```
+
+Consider adding `?sslmode=disable` at the end of your DB URL.
+See this [stackoverflow post](https://stackoverflow.com/questions/21959148/ssl-is-not-enabled-on-the-server) for more details.
+
+## Notes to self
+* Handle case where email is taken but has not been confirmed
+* Fatal logs are stopping the API, fix this.
+    * Possibly use right router, which uses the middleware to handle errors

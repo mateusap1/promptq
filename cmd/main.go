@@ -30,6 +30,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/health", api.GetHealth)
+	router.POST("/signup", func(c *gin.Context) { api.SignUp(c, db) })
 
 	// For running in production just use router.Run()
 	router.Run()
