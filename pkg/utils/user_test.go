@@ -1,11 +1,16 @@
 package utils
 
 import (
+	"database/sql"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var db *sql.DB
 
 func TestValidEmailFormat(t *testing.T) {
 	assert.Equal(t, true, ValidEmailFormat("a@b"))
@@ -23,4 +28,59 @@ func TestValidPasswordFormat(t *testing.T) {
 	assert.Equal(t, false, ValidPasswordFormat("12345a678@"))
 	assert.Equal(t, false, ValidPasswordFormat("12345A678!"))
 	assert.Equal(t, false, ValidPasswordFormat(strings.Repeat("a", 64)+"A@0"))
+}
+
+func TestEmailAlreadyExists(t *testing.T) {
+	if _, err := db.Exec(`
+		INSERT INTO user (email, password_hash) VALUES ($1, $2);
+	`, "alice@email.com", ""); err != nil {
+		log.Fatal("Error inserting user:", err)
+	}
+
+	exists, err := EmailAlreadyExists(db, "bob@email.com")
+	assert.Nil(t, err)
+	assert.Equal(t, false, exists)
+
+	exists, err = EmailAlreadyExists(db, "alice@email.com")
+	assert.Nil(t, err)
+	assert.Equal(t, true, exists)
+}
+
+func TestCreateUser(t *testing.T) {
+	confirmToken, err := CreateUser(db, "charlie@email.com", "")
+	assert.Nil(t, err)
+
+	var confirmToken2 string
+	err = db.QueryRow("SELECT confirm_token FROM user WHERE email=$1;", "charlie@email.com").Scan(&confirmToken2)
+	assert.Nil(t, err, "user was not created")
+
+	assert.Equal(t, confirmToken2, confirmToken, "token returned is different")
+}
+
+func setup() {
+	db = OpenSQLite(":memory:")
+
+	if _, err := db.Exec(`
+        CREATE TABLE user (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			email VARCHAR NOT NULL,
+			password_hash VARCHAR NOT NULL,
+			email_verified BOOLEAN DEFAULT FALSE NOT NULL,
+			confirm_token VARCHAR NULL,
+			confirm_token_expires TIMESTAMP NULL,
+			reset_token VARCHAR NULL,
+			reset_token_expires TIMESTAMP NULL,
+			created_at TIMESTAMP DEFAULT NOW,
+			updated_at TIMESTAMP DEFAULT NOW
+		);
+    `); err != nil {
+		log.Fatal("Error creating table:", err)
+	}
+}
+
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	// shutdown()
+	os.Exit(code)
 }

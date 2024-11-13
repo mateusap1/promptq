@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 
-	db := utils.OpenDB(pgURL)
+	db := utils.OpenPostgresDB(pgURL)
 	defer db.Close()
 
 	router := gin.Default()

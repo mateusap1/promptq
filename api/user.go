@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mateusap1/promptq/pkg/utils"
@@ -29,17 +30,20 @@ func SignUp(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	if !utils.ValidEmailFormat(form.Email) {
+	email := strings.ToLower(form.Email)
+	password := form.Password
+
+	if !utils.ValidEmailFormat(email) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidEmailFormat})
 		return
 	}
 
-	if !utils.ValidPasswordFormat(form.Password) {
+	if !utils.ValidPasswordFormat(password) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidPasswordFormat})
 		return
 	}
 
-	exists, err := utils.EmailAlreadyExists(db, form.Email)
+	exists, err := utils.EmailAlreadyExists(db, email)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -50,8 +54,8 @@ func SignUp(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	passwordHash := utils.EncodePassword(form.Password)
-	confirmToken, err := utils.CreateUser(db, form.Email, passwordHash)
+	passwordHash := utils.EncodePassword(password)
+	confirmToken, err := utils.CreateUser(db, email, passwordHash)
 	if err != nil {
 		log.Fatal(err)
 		return

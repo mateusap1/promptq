@@ -84,7 +84,7 @@ func CreateUser(db *sql.DB, email, passwordHash string) (confirmToken string, er
 	confirmDuration := 24 * time.Hour
 	currentTime := time.Now().UTC()
 
-	query := "INSERT INTO user (email, password_hash, confirm_token, confirm_token_expires) VALUES ($1, $2)"
+	query := "INSERT INTO user (email, password_hash, confirm_token, confirm_token_expires) VALUES ($1, $2, $3, $4)"
 	if _, err := db.Exec(query, email, passwordHash, confirmToken, currentTime.Add(confirmDuration)); err != nil {
 		return "", err
 	}
