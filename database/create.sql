@@ -1,7 +1,7 @@
 CREATE TABLE user (
-    id primary key,
-    email varchar(256),
-    password_hash char(32),
+    id int primary key,
+    email varchar,
+    password_hash varchar,
     salt bytea,
     email_verified boolean,
     confirm_token bytea,
@@ -10,4 +10,4 @@ CREATE TABLE user (
     reset_token_expires timestamp,
     created_at timestamp,
     updated_at timestamp,
-)
+);

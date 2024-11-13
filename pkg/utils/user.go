@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"regexp"
@@ -52,28 +53,23 @@ func ValidatePassword(password string) bool {
 	return true
 }
 
-// func EmailAlreadyExists(db *sql.DB, email string) (bool, bool) {
-// 	// Returns (exists, expired)
+func EmailAlreadyExists(db *sql.DB, email string) bool {
+	// Need to handle case where email exists but has not been confirmed
+	// Not handling it right now
 
-// 	rows, err := db.Query("SELECT id, email_confirmed, confirm_token_expires FROM user WHERE email=$1;", email)
-// 	if err != nil {
-// 		log.Fatal("Error querying data:", err)
-// 	}
-// 	defer rows.Close()
+	rows, err := db.Query("SELECT id FROM user WHERE email=$1;", email)
+	if err != nil {
+		log.Fatal("Error querying data:", err)
+	}
+	defer rows.Close()
 
-// 	// var users [](int, string)
-// 	for rows.Next() {
-// 		var id int
-// 		var name string
-// 		if err := rows.Scan(&id, &name); err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		fmt.Printf("ID: %d, Name: %s\n", id, name)
+	if rows.Next() {
+		return true
+	} else {
+		if err := rows.Err(); err != nil {
+			log.Fatal(err)
+		}
 
-// 		counter++
-// 	}
-
-// 	if err := rows.Err(); err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+		return false
+	}
+}
