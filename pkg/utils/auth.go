@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -28,7 +29,7 @@ type params struct {
 	keyLength   uint32
 }
 
-func GenerateSalt(n uint32) ([]byte, error) {
+func generateRand(n uint32) ([]byte, error) {
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {
 		return nil, err
@@ -37,13 +38,13 @@ func GenerateSalt(n uint32) ([]byte, error) {
 	return b, nil
 }
 
-func HashPassword(rawPassword string, salt []byte, p *params) []byte {
-	// Recommended Params memory=64*1024,iterations=1,parallelism=4,
+func hashPassword(rawPassword string, salt []byte, p *params) []byte {
+	// Recommended params memory=64*1024,iterations=1,parallelism=4,
 	// saltLength=16,keyLength=32
 	return argon2.IDKey([]byte(rawPassword), salt, p.iterations, p.memory, p.parallelism, p.keyLength)
 }
 
-func EncodeHash(hash []byte, salt []byte, p *params) string {
+func encodeHash(hash []byte, salt []byte, p *params) string {
 	// Base64 encode the salt and hashed password.
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 	b64Hash := base64.RawStdEncoding.EncodeToString(hash)
@@ -54,7 +55,7 @@ func EncodeHash(hash []byte, salt []byte, p *params) string {
 	return encodedHash
 }
 
-func DecodeHash(encodedHash string) (p *params, salt, hash []byte, err error) {
+func decodeHash(encodedHash string) (p *params, salt, hash []byte, err error) {
 	vals := strings.Split(encodedHash, "$")
 	if len(vals) != 6 {
 		return nil, nil, nil, ErrInvalidHash
@@ -90,7 +91,7 @@ func DecodeHash(encodedHash string) (p *params, salt, hash []byte, err error) {
 func ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
-	p, salt, hash, err := DecodeHash(encodedHash)
+	p, salt, hash, err := decodeHash(encodedHash)
 	if err != nil {
 		return false, err
 	}
@@ -105,4 +106,24 @@ func ComparePasswordAndHash(password, encodedHash string) (match bool, err error
 		return true, nil
 	}
 	return false, nil
+}
+
+func EncodePassword(password string) (encodedPassword string) {
+	params := &params{memory: 64 * 1024, iterations: 1, parallelism: 4, saltLength: 16, keyLength: 32}
+	salt, err := generateRand(params.saltLength)
+	if err != nil {
+		log.Fatal(err)
+	}
+	hash := hashPassword(password, salt, params)
+
+	return encodeHash(hash, salt, params)
+}
+
+func GenerateConfirmToken() (confirmToken string, err error) {
+	token, err := generateRand(128)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.RawStdEncoding.EncodeToString(token), nil
 }
