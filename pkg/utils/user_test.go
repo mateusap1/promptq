@@ -132,26 +132,30 @@ func TestGetActiveSession(t *testing.T) {
 	assert.Equal(t, sql.ErrNoRows, err)
 }
 
-// func TestCreateSession(t *testing.T) {
-// 	db := setup()
+func TestCreateSession(t *testing.T) {
+	db := setup()
 
-// 	var query string
-// 	var result sql.Result
-// 	var err error
+	aliceId := createMockUser(db, "alice@email.com", "pw", true)
 
-// 	query = "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3);"
-// 	result, err = db.Exec(query, "alice@email.com", "pw", true)
-// 	if err != nil {
-// 		log.Fatal("Error inserting user alice: ", err)
-// 	}
+	sessionId, sessionToken, err := CreateSession(db, aliceId, "ua", "ip")
+	assert.Nil(t, err)
 
-// 	userId, err := result.LastInsertId()
-// 	if err != nil {
-// 		log.Fatal("Error getting last inserted id: ", err)
-// 	}
-
-// 	CreateSession(db)
-// }
+	var userId int64
+	var userAgent, ipAddress, dbToken string
+	err = db.QueryRow("SELECT user_id, user_agent, ip_address, session_token FROM sessions WHERE id=$1;", sessionId).Scan(&userId, &userAgent, &ipAddress, &dbToken)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			assert.Fail(t, "CreateSession did not insert session in db with returned id")
+		} else {
+			log.Fatal(err)
+		}
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, aliceId, userId)
+	assert.Equal(t, "ua", userAgent)
+	assert.Equal(t, "ip", ipAddress)
+	assert.Equal(t, sessionToken, dbToken)
+}
 
 func setup() (db *sql.DB) {
 	db = OpenSQLite(":memory:")

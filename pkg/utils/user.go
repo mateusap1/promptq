@@ -71,7 +71,7 @@ func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
 }
 
 func CreateUser(db *sql.DB, email, passwordHash string) (validateToken string, err error) {
-	validateToken, err = GenerateValidateToken()
+	validateToken, err = GenerateToken()
 	if err != nil {
 		return "", err
 	}
@@ -111,21 +111,27 @@ func GetActiveSession(db *sql.DB, userId int64) (id int64, token string, err err
 	return id, token, nil
 }
 
-func CreateSession(db *sql.DB, userId int64, userAgent string, ipAddress string) (token string, err error) {
-	token, err = GenerateValidateToken()
+func CreateSession(db *sql.DB, userId int64, userAgent string, ipAddress string) (id int64, token string, err error) {
+	token, err = GenerateToken()
 	if err != nil {
-		return "", err
+		return -1, "", err
 	}
 
 	sessionDuration := 24 * time.Hour
 	currentTime := time.Now().UTC()
 
-	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, expires_at) VALUES ($1, $2, $3, $4);"
-	if _, err = db.Exec(query, userId, userAgent, ipAddress, token, currentTime.Add(sessionDuration)); err != nil {
-		return "", err
+	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, expires_at) VALUES ($1, $2, $3, $4, $5);"
+	result, err := db.Exec(query, userId, userAgent, ipAddress, token, currentTime.Add(sessionDuration))
+	if err != nil {
+		return -1, "", err
 	}
 
-	return token, nil
+	id, err = result.LastInsertId()
+	if err != nil {
+		return -1, "", err
+	}
+
+	return id, token, nil
 }
 
 func DeactivateSessionById(db *sql.DB, id int64) error {
