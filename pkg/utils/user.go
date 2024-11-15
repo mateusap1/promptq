@@ -54,22 +54,6 @@ func ValidPasswordFormat(password string) bool {
 	return true
 }
 
-func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
-	// Need to handle case where email exists but has not been confirmed
-	// Not handling it right now
-
-	var id int
-	if err := db.QueryRow("SELECT id FROM users WHERE email=$1;", email).Scan(&id); err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		} else {
-			return false, err
-		}
-	}
-
-	return true, nil
-}
-
 func CreateUser(db *sql.DB, email, passwordHash string) (validateToken string, err error) {
 	validateToken, err = GenerateToken()
 	if err != nil {
@@ -100,6 +84,17 @@ func GetUserLoginByEmail(db *sql.DB, email string) (id int64, passwordHash strin
 	}
 
 	return id, passwordHash, emailVerified, nil
+}
+
+func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
+	_, _, _, err := GetUserLoginByEmail(db, email)
+	if err == nil {
+		return true, nil
+	} else if err == sql.ErrNoRows {
+		return false, nil
+	} else {
+		return false, err
+	}
 }
 
 func GetActiveSession(db *sql.DB, userId int64) (id int64, token string, err error) {
