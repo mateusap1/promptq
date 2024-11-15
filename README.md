@@ -29,3 +29,7 @@ See this [stackoverflow post](https://stackoverflow.com/questions/21959148/ssl-i
 * Handle case where email is taken but has not been confirmed
 * Fatal logs are stopping the API, fix this.
     * Possibly use right router, which uses the middleware to handle errors
+* Database tests currently have concurrency issues, they share the same database.
+* I should add an idle timeout in addition to the existing abosulte timeout.
+    * I would need to keep track of user activity and update the timeout accordingly. Maybe through a last interaction column in the users table.
+* Possibly index common columns such as email.

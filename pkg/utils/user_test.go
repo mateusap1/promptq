@@ -3,14 +3,41 @@ package utils
 import (
 	"database/sql"
 	"log"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var db *sql.DB
+func createMockUser(db *sql.DB, email string, passwordHash string, verified bool) (id int64) {
+	const query = "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3);"
+	result, err := db.Exec(query, email, passwordHash, verified)
+	if err != nil {
+		log.Fatal("Error inserting user: ", err)
+	}
+
+	id, err = result.LastInsertId()
+	if err != nil {
+		log.Fatal("Error getting last inserted id: ", err)
+	}
+
+	return id
+}
+
+func createMockSession(db *sql.DB, userId int64, userAgent string, ipAddress string, token string, active bool) (id int64) {
+	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, active) VALUES ($1, $2, $3, $4, $5);"
+	result, err := db.Exec(query, userId, userAgent, ipAddress, token, active)
+	if err != nil {
+		log.Fatal("Error inserting session: ", err)
+	}
+
+	id, err = result.LastInsertId()
+	if err != nil {
+		log.Fatal("Error getting last inserted id: ", err)
+	}
+
+	return id
+}
 
 func TestValidEmailFormat(t *testing.T) {
 	assert.Equal(t, true, ValidEmailFormat("a@b"))
@@ -31,6 +58,8 @@ func TestValidPasswordFormat(t *testing.T) {
 }
 
 func TestEmailAlreadyExists(t *testing.T) {
+	db := setup()
+
 	if _, err := db.Exec(`
 		INSERT INTO users (email, password_hash) VALUES ($1, $2);
 	`, "alice@email.com", ""); err != nil {
@@ -46,38 +75,89 @@ func TestEmailAlreadyExists(t *testing.T) {
 	assert.Equal(t, true, exists)
 }
 
-func TestGetUserLogin(t *testing.T) {
-	if _, err := db.Exec(`
-		INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3);
-	`, "bob@email.com", "pw", true); err != nil {
-		log.Fatal("Error inserting user: ", err)
-	}
+func TestCreateUser(t *testing.T) {
+	db := setup()
 
-	_, _, _, err := GetUserLogin(db, "charlie@email.com")
+	expectedToken, err := CreateUser(db, "alice@email.com", "")
+	assert.Nil(t, err)
+
+	var token string
+	err = db.QueryRow("SELECT validate_token FROM users WHERE email=$1;", "alice@email.com").Scan(&token)
+	assert.Nil(t, err, "user was not created")
+
+	assert.Equal(t, token, expectedToken, "token returned is different")
+}
+
+func TestGetUserLoginByEmail(t *testing.T) {
+	db := setup()
+
+	createMockUser(db, "alice@email.com", "pw", true)
+
+	_, _, _, err := GetUserLoginByEmail(db, "bob@email.com")
 	assert.ErrorIs(t, sql.ErrNoRows, err)
 
-	_, passwordHash, emailVerified, err := GetUserLogin(db, "bob@email.com")
+	_, passwordHash, emailVerified, err := GetUserLoginByEmail(db, "alice@email.com")
 	assert.Nil(t, err)
 	assert.Equal(t, passwordHash, "pw")
 	assert.Equal(t, emailVerified, true)
 }
 
-func TestCreateUser(t *testing.T) {
-	validateToken, err := CreateUser(db, "charlie@email.com", "")
+func TestGetActiveSession(t *testing.T) {
+	db := setup()
+
+	var err error
+
+	aliceId := createMockUser(db, "alice@email.com", "pw", true)
+	activeSessionId := createMockSession(db, aliceId, "agent1", "ip", "token", true)
+
+	id, token, err := GetActiveSession(db, aliceId)
 	assert.Nil(t, err)
+	assert.Equal(t, "token", token)
+	assert.Equal(t, activeSessionId, id)
 
-	var validateToken2 string
-	err = db.QueryRow("SELECT validate_token FROM users WHERE email=$1;", "charlie@email.com").Scan(&validateToken2)
-	assert.Nil(t, err, "user was not created")
+	// Test with not active
 
-	assert.Equal(t, validateToken2, validateToken, "token returned is different")
+	// Creating a new session not active. Should not return it
+	createMockSession(db, aliceId, "agent2", "ip2", "token2", false)
+
+	id, token, err = GetActiveSession(db, aliceId)
+	assert.Nil(t, err)
+	assert.Equal(t, "token", token)
+	assert.Equal(t, activeSessionId, id)
+
+	// If user has no sessions, should return error
+	bobId := createMockUser(db, "bob@email.com", "pw", true)
+
+	_, _, err = GetActiveSession(db, bobId)
+	assert.Equal(t, sql.ErrNoRows, err)
 }
 
-func setup() {
+// func TestCreateSession(t *testing.T) {
+// 	db := setup()
+
+// 	var query string
+// 	var result sql.Result
+// 	var err error
+
+// 	query = "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3);"
+// 	result, err = db.Exec(query, "alice@email.com", "pw", true)
+// 	if err != nil {
+// 		log.Fatal("Error inserting user alice: ", err)
+// 	}
+
+// 	userId, err := result.LastInsertId()
+// 	if err != nil {
+// 		log.Fatal("Error getting last inserted id: ", err)
+// 	}
+
+// 	CreateSession(db)
+// }
+
+func setup() (db *sql.DB) {
 	db = OpenSQLite(":memory:")
 
 	if _, err := db.Exec(`
-        CREATE TABLE users (
+		CREATE TABLE users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			email VARCHAR NOT NULL,
 			password_hash VARCHAR NOT NULL,
@@ -87,16 +167,22 @@ func setup() {
 			reset_token VARCHAR NULL,
 			reset_token_expires TIMESTAMP NULL,
 			created_at TIMESTAMP DEFAULT NOW,
-			updated_at TIMESTAMP DEFAULT NOW
+			updated_at TIMESTAMP
+		);
+
+		CREATE TABLE sessions (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER NOT NULL REFERENCES users ON DELETE CASCADE,
+			user_agent VARCHAR NOT NULL,
+			ip_address VARCHAR NOT NULL,
+			session_token VARCHAR NOT NULL,
+			active BOOLEAN DEFAULT TRUE NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW,
+			expires_at TIMESTAMP
 		);
     `); err != nil {
-		log.Fatal("Error creating table:", err)
+		log.Fatal("Error creating tables: ", err)
 	}
-}
 
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	// shutdown()
-	os.Exit(code)
+	return db
 }

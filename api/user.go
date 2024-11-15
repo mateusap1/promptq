@@ -12,20 +12,23 @@ import (
 
 var (
 	ErrEmailExists           = "email taken"
+	ErrEmailUnverified       = "email unverified"
+	ErrNoAccountEmail        = "no account with email"
+	ErrWrongPassword         = "wrong password"
 	ErrInvalidPasswordFormat = "invalid password format or weak password"
 	ErrInvalidEmailFormat    = "invalid email format"
 	ErrInvalidFormat         = "invalid request format"
 )
 
-type SignUpForm struct {
+type SignForm struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func SignUp(c *gin.Context, db *sql.DB) {
-	var form SignUpForm
+	var form SignForm
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidFormat})
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
 		return
 	}
 
@@ -33,12 +36,12 @@ func SignUp(c *gin.Context, db *sql.DB) {
 	password := form.Password
 
 	if !utils.ValidEmailFormat(email) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidEmailFormat})
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidEmailFormat, "error": "ErrInvalidEmailFormat"})
 		return
 	}
 
 	if !utils.ValidPasswordFormat(password) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidPasswordFormat})
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidPasswordFormat, "error": "ErrInvalidPasswordFormat"})
 		return
 	}
 
@@ -49,7 +52,7 @@ func SignUp(c *gin.Context, db *sql.DB) {
 	}
 
 	if exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrEmailExists})
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrEmailExists, "error": "ErrEmailExists"})
 		return
 	}
 
@@ -67,4 +70,43 @@ func SignUp(c *gin.Context, db *sql.DB) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func SignIn(c *gin.Context, db *sql.DB) {
+	var form SignForm
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		return
+	}
+
+	email := strings.ToLower(form.Email)
+	password := form.Password
+
+	id, passwordHash, emailVerified, err := utils.GetUserLoginByEmail(db, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusBadRequest, gin.H{"message": ErrNoAccountEmail, "error": "ErrNoAccountEmail"})
+			return
+		} else {
+			log.Fatal(err)
+			return
+		}
+	}
+
+	if !emailVerified {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrEmailUnverified, "error": "ErrEmailUnverified"})
+		return
+	}
+
+	rightPassword, err := utils.ComparePasswordAndHash(password, passwordHash)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if !rightPassword {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrWrongPassword, "error": "ErrWrongPassword"})
+		return
+	}
+
 }

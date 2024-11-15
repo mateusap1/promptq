@@ -93,8 +93,8 @@ func SendValidationEmail(confirmToken string) error {
 	return nil
 }
 
-func GetUserLogin(db *sql.DB, email string) (id int, passwordHash string, emailVerified bool, err error) {
-	if err := db.QueryRow("SELECT id, password_hash, email_verified FROM users WHERE email=$1;", email).Scan(&id, &passwordHash, &emailVerified); err != nil {
+func GetUserLoginByEmail(db *sql.DB, email string) (id int64, passwordHash string, emailVerified bool, err error) {
+	if err = db.QueryRow("SELECT id, password_hash, email_verified FROM users WHERE email=$1;", email).Scan(&id, &passwordHash, &emailVerified); err != nil {
 		// error sql.ErrNoRows means that the user does not exist
 		return -1, "", false, err
 	}
@@ -102,7 +102,16 @@ func GetUserLogin(db *sql.DB, email string) (id int, passwordHash string, emailV
 	return id, passwordHash, emailVerified, nil
 }
 
-func CreateSession(db *sql.DB, userId int, userAgent string, ipAddress string) (token string, err error) {
+func GetActiveSession(db *sql.DB, userId int64) (id int64, token string, err error) {
+	const query = "SELECT id, session_token FROM sessions WHERE user_id=$1 AND active=TRUE ORDER BY expires_at DESC;"
+	if err = db.QueryRow(query, userId).Scan(&id, &token); err != nil {
+		return -1, "", err
+	}
+
+	return id, token, nil
+}
+
+func CreateSession(db *sql.DB, userId int64, userAgent string, ipAddress string) (token string, err error) {
 	token, err = GenerateValidateToken()
 	if err != nil {
 		return "", err
@@ -119,16 +128,7 @@ func CreateSession(db *sql.DB, userId int, userAgent string, ipAddress string) (
 	return token, nil
 }
 
-func GetActiveSession(db *sql.DB, userId int) (id int, token string, err error) {
-	const query = "SELECT id, session_token FROM sessions WHERE user_id=$1 AND active=TRUE ORDER BY expires_at DESC;"
-	if err = db.QueryRow(query, userId).Scan(&id, &token); err != nil {
-		return -1, "", err
-	}
-
-	return id, token, nil
-}
-
-func DeactivateSessionById(db *sql.DB, id int) error {
+func DeactivateSessionById(db *sql.DB, id int64) error {
 	const query = "UPDATE sessions SET active=FALSE WHERE id=$1;"
 	_, err := db.Exec(query, id)
 	return err
