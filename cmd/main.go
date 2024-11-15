@@ -31,6 +31,7 @@ func main() {
 
 	router.GET("/health", api.GetHealth)
 	router.POST("/signup", func(c *gin.Context) { api.SignUp(c, db) })
+	router.POST("/signin", func(c *gin.Context) { api.SignIn(c, db) })
 
 	// For running in production just use router.Run()
 	router.Run()

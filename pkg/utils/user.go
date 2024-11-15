@@ -68,6 +68,8 @@ func CreateUser(db *sql.DB, email, passwordHash string) (validateToken string, e
 		return "", err
 	}
 
+	// Should return id as well
+
 	return validateToken, nil
 }
 
@@ -115,14 +117,8 @@ func CreateSession(db *sql.DB, userId int64, userAgent string, ipAddress string)
 	sessionDuration := 24 * time.Hour
 	currentTime := time.Now().UTC()
 
-	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, expires_at) VALUES ($1, $2, $3, $4, $5);"
-	result, err := db.Exec(query, userId, userAgent, ipAddress, token, currentTime.Add(sessionDuration))
-	if err != nil {
-		return -1, "", err
-	}
-
-	id, err = result.LastInsertId()
-	if err != nil {
+	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, expires_at) VALUES ($1, $2, $3, $4, $5) RETURNING id;"
+	if err := db.QueryRow(query, userId, userAgent, ipAddress, token, currentTime.Add(sessionDuration)).Scan(&id); err != nil {
 		return -1, "", err
 	}
 

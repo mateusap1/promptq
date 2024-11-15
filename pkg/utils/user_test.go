@@ -10,30 +10,18 @@ import (
 )
 
 func createMockUser(db *sql.DB, email string, passwordHash string, verified bool) (id int64) {
-	const query = "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3);"
-	result, err := db.Exec(query, email, passwordHash, verified)
-	if err != nil {
+	const query = "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3) RETURNING id;"
+	if err := db.QueryRow(query, email, passwordHash, verified).Scan(&id); err != nil {
 		log.Fatal("Error inserting user: ", err)
-	}
-
-	id, err = result.LastInsertId()
-	if err != nil {
-		log.Fatal("Error getting last inserted id: ", err)
 	}
 
 	return id
 }
 
 func createMockSession(db *sql.DB, userId int64, userAgent string, ipAddress string, token string, active bool) (id int64) {
-	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, active) VALUES ($1, $2, $3, $4, $5);"
-	result, err := db.Exec(query, userId, userAgent, ipAddress, token, active)
-	if err != nil {
+	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, active) VALUES ($1, $2, $3, $4, $5) RETURNING id;"
+	if err := db.QueryRow(query, userId, userAgent, ipAddress, token, active).Scan(&id); err != nil {
 		log.Fatal("Error inserting session: ", err)
-	}
-
-	id, err = result.LastInsertId()
-	if err != nil {
-		log.Fatal("Error getting last inserted id: ", err)
 	}
 
 	return id
@@ -60,19 +48,15 @@ func TestValidPasswordFormat(t *testing.T) {
 func TestEmailAlreadyExists(t *testing.T) {
 	db := setup()
 
-	if _, err := db.Exec(`
-		INSERT INTO users (email, password_hash) VALUES ($1, $2);
-	`, "alice@email.com", ""); err != nil {
-		log.Fatal("Error inserting user:", err)
-	}
+	createMockUser(db, "alice@email.com", "", false)
 
-	exists, err := EmailAlreadyExists(db, "bob@email.com")
-	assert.Nil(t, err)
-	assert.Equal(t, false, exists)
-
-	exists, err = EmailAlreadyExists(db, "alice@email.com")
+	exists, err := EmailAlreadyExists(db, "alice@email.com")
 	assert.Nil(t, err)
 	assert.Equal(t, true, exists)
+
+	exists, err = EmailAlreadyExists(db, "bob@email.com")
+	assert.Nil(t, err)
+	assert.Equal(t, false, exists)
 }
 
 func TestCreateUser(t *testing.T) {

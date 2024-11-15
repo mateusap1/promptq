@@ -82,7 +82,8 @@ func SignIn(c *gin.Context, db *sql.DB) {
 	email := strings.ToLower(form.Email)
 	password := form.Password
 
-	id, passwordHash, emailVerified, err := utils.GetUserLoginByEmail(db, email)
+	// Enforce user exists and get login information
+	userId, passwordHash, emailVerified, err := utils.GetUserLoginByEmail(db, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusBadRequest, gin.H{"message": ErrNoAccountEmail, "error": "ErrNoAccountEmail"})
@@ -93,20 +94,28 @@ func SignIn(c *gin.Context, db *sql.DB) {
 		}
 	}
 
+	// Enforce user if verified
 	if !emailVerified {
 		c.JSON(http.StatusBadRequest, gin.H{"message": ErrEmailUnverified, "error": "ErrEmailUnverified"})
 		return
 	}
 
-	rightPassword, err := utils.ComparePasswordAndHash(password, passwordHash)
-	if err != nil {
+	// Check password
+	if rightPassword, err := utils.ComparePasswordAndHash(password, passwordHash); err != nil {
 		log.Fatal(err)
 		return
-	}
-
-	if !rightPassword {
+	} else if !rightPassword {
 		c.JSON(http.StatusBadRequest, gin.H{"message": ErrWrongPassword, "error": "ErrWrongPassword"})
 		return
 	}
 
+	// It is allowed to have two sessions
+
+	_, token, err := utils.CreateSession(db, userId, c.Request.UserAgent(), c.ClientIP())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.SetCookie("session", token, 24*60*60, "/", "", true, true)
+	c.JSON(http.StatusOK, gin.H{})
 }
