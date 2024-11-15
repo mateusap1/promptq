@@ -108,6 +108,16 @@ func GetActiveSession(db *sql.DB, userId int64) (id int64, token string, err err
 	return id, token, nil
 }
 
+func GetSessionByToken(db *sql.DB, token string) (id int64, userId int64, active bool, expiresAt time.Time, err error) {
+	var exp sql.NullTime
+	const query = "SELECT id, user_id, active, expires_at FROM sessions WHERE session_token=$1;"
+	if err = db.QueryRow(query, token).Scan(&id, &userId, &active, &exp); err != nil {
+		return -1, -1, false, time.Unix(-1, -1), err
+	}
+
+	return id, userId, active, exp.Time, nil
+}
+
 func CreateSession(db *sql.DB, userId int64, userAgent string, ipAddress string) (id int64, token string, err error) {
 	token, err = GenerateToken()
 	if err != nil {

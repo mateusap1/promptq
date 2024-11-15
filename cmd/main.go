@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/mateusap1/promptq/api"
+	auth "github.com/mateusap1/promptq/middleware"
 	"github.com/mateusap1/promptq/pkg/utils"
 )
 
@@ -32,6 +33,10 @@ func main() {
 	router.GET("/health", api.GetHealth)
 	router.POST("/signup", func(c *gin.Context) { api.SignUp(c, db) })
 	router.POST("/signin", func(c *gin.Context) { api.SignIn(c, db) })
+
+	protected := router.Group("", auth.AuthMiddleware(db))
+	protected.GET("/protected", func(c *gin.Context) {})
+	// router.GET("/protected", func(c *gin.Context) { api.SignIn(c, db) })
 
 	// For running in production just use router.Run()
 	router.Run()

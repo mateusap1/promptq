@@ -1,39 +1,53 @@
 package auth
 
-// import (
-// 	"fmt"
-// 	"net/http"
+import (
+	"database/sql"
+	"log"
+	"net/http"
+	"time"
 
-// 	"github.com/gin-gonic/gin"
-// 	"golang.org/x/crypto/argon2"
-// )
+	"github.com/gin-gonic/gin"
+	"github.com/mateusap1/promptq/pkg/utils"
+)
 
-// func HashPassword(rawPassword string, salt []byte) []byte {
-// 	return argon2.IDKey([]byte(rawPassword), salt, 1, 64*1024, 4, 32)
-// }
+var ErrInvalidSession = "session token does't exist"
+var ErrInactiveSession = "session token is inactive"
+var ErrExpiredSession = "session token has expired"
 
-// func AuthMiddleware() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		tokenString := c.GetHeader("Authorization")
-// 		if tokenString == "" {
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 				"error": "Authorization token required",
-// 				"code":  "API_KEY_MISSING",
-// 			})
-// 			return
-// 		}
+func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, err := c.Cookie("session")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": http.ErrNoCookie.Error(), "error": "ErrNoCookie"})
+				return
+			} else {
+				log.Fatal(err)
+				return
+			}
+		}
 
-// 		id, err := utils.VerifyToken(tokenString)
-// 		if err != nil {
-// 			fmt.Print(err)
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 				"error": "Invalid authentication token",
-// 				"code":  "AUTH_TOKEN_INVALID",
-// 			})
-// 			return
-// 		}
+		sessionId, userId, active, expiresAt, err := utils.GetSessionByToken(db, token)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": ErrInvalidSession, "error": "ErrInvalidSession"})
+				return
+			}
+			log.Fatal(err)
+			return
+		}
 
-// 		c.Set("userId", id)
-// 		c.Next()
-// 	}
-// }
+		if !active {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": ErrInactiveSession, "error": "ErrInactiveSession"})
+			return
+		} else if time.Now().UTC().After(expiresAt) {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": ErrExpiredSession, "error": "ErrExpiredSession"})
+			return
+		}
+
+		c.Set("sessionId", sessionId)
+		c.Set("userId", userId)
+
+		c.Next()
+	}
+}

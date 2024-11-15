@@ -86,6 +86,21 @@ func TestGetUserLoginByEmail(t *testing.T) {
 	assert.Equal(t, emailVerified, true)
 }
 
+func TestSessionByToken(t *testing.T) {
+	db := setup()
+
+	var err error
+
+	aliceId := createMockUser(db, "alice@email.com", "pw", true)
+	sessionId := createMockSession(db, aliceId, "agent1", "ip", "token", true)
+
+	id, userId, active, _, err := GetSessionByToken(db, "token")
+	assert.Nil(t, err)
+	assert.Equal(t, userId, aliceId)
+	assert.Equal(t, true, active)
+	assert.Equal(t, sessionId, id)
+}
+
 func TestGetActiveSession(t *testing.T) {
 	db := setup()
 
