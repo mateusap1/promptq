@@ -134,14 +134,8 @@ func CreateSession(db *sql.DB, userId int64, userAgent string, ipAddress string)
 	return id, token, nil
 }
 
-func DeactivateSessionById(db *sql.DB, id int64) error {
+func DeactivateSession(db *sql.DB, id int64) error {
 	const query = "UPDATE sessions SET active=FALSE WHERE id=$1;"
 	_, err := db.Exec(query, id)
-	return err
-}
-
-func DeactivateSessionByToken(db *sql.DB, token string) error {
-	const query = "UPDATE sessions SET active=FALSE WHERE session_token=$1;"
-	_, err := db.Exec(query, token)
 	return err
 }

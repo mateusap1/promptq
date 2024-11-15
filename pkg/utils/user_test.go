@@ -142,8 +142,7 @@ func TestCreateSession(t *testing.T) {
 
 	var userId int64
 	var userAgent, ipAddress, dbToken string
-	err = db.QueryRow("SELECT user_id, user_agent, ip_address, session_token FROM sessions WHERE id=$1;", sessionId).Scan(&userId, &userAgent, &ipAddress, &dbToken)
-	if err != nil {
+	if err := db.QueryRow("SELECT user_id, user_agent, ip_address, session_token FROM sessions WHERE id=$1;", sessionId).Scan(&userId, &userAgent, &ipAddress, &dbToken); err != nil {
 		if err == sql.ErrNoRows {
 			assert.Fail(t, "CreateSession did not insert session in db with returned id")
 		} else {
@@ -155,6 +154,21 @@ func TestCreateSession(t *testing.T) {
 	assert.Equal(t, "ua", userAgent)
 	assert.Equal(t, "ip", ipAddress)
 	assert.Equal(t, sessionToken, dbToken)
+}
+
+func TestDeactivateSession(t *testing.T) {
+	db := setup()
+
+	userId := createMockUser(db, "alice@email.com", "pwd", true)
+	sessionId := createMockSession(db, userId, "ua", "ip", "token", true)
+
+	DeactivateSession(db, sessionId)
+	var active bool
+	if err := db.QueryRow("SELECT active FROM sessions WHERE id=$1;", sessionId).Scan(&active); err != nil {
+		log.Fatal(err)
+	}
+
+	assert.Equal(t, active, false)
 }
 
 func setup() (db *sql.DB) {
