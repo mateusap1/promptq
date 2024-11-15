@@ -58,21 +58,16 @@ func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
 	// Need to handle case where email exists but has not been confirmed
 	// Not handling it right now
 
-	rows, err := db.Query("SELECT id FROM users WHERE email=$1;", email)
-	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		return true, nil
-	} else {
-		if err := rows.Err(); err != nil {
+	var id int
+	if err := db.QueryRow("SELECT id FROM users WHERE email=$1;", email).Scan(&id); err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		} else {
 			return false, err
 		}
-
-		return false, nil
 	}
+
+	return true, nil
 }
 
 func CreateUser(db *sql.DB, email, passwordHash string) (validateToken string, err error) {
@@ -96,4 +91,51 @@ func SendValidationEmail(confirmToken string) error {
 	log.Printf("Sending validation e-mail with token %v...\n", confirmToken)
 
 	return nil
+}
+
+func GetUserLogin(db *sql.DB, email string) (id int, passwordHash string, emailVerified bool, err error) {
+	if err := db.QueryRow("SELECT id, password_hash, email_verified FROM users WHERE email=$1;", email).Scan(&id, &passwordHash, &emailVerified); err != nil {
+		// error sql.ErrNoRows means that the user does not exist
+		return -1, "", false, err
+	}
+
+	return id, passwordHash, emailVerified, nil
+}
+
+func CreateSession(db *sql.DB, userId int, userAgent string, ipAddress string) (token string, err error) {
+	token, err = GenerateValidateToken()
+	if err != nil {
+		return "", err
+	}
+
+	sessionDuration := 24 * time.Hour
+	currentTime := time.Now().UTC()
+
+	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, expires_at) VALUES ($1, $2, $3, $4);"
+	if _, err = db.Exec(query, userId, userAgent, ipAddress, token, currentTime.Add(sessionDuration)); err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func GetActiveSession(db *sql.DB, userId int) (id int, token string, err error) {
+	const query = "SELECT id, session_token FROM sessions WHERE user_id=$1 AND active=TRUE ORDER BY expires_at DESC;"
+	if err = db.QueryRow(query, userId).Scan(&id, &token); err != nil {
+		return -1, "", err
+	}
+
+	return id, token, nil
+}
+
+func DeactivateSessionById(db *sql.DB, id int) error {
+	const query = "UPDATE sessions SET active=FALSE WHERE id=$1;"
+	_, err := db.Exec(query, id)
+	return err
+}
+
+func DeactivateSessionByToken(db *sql.DB, token string) error {
+	const query = "UPDATE sessions SET active=FALSE WHERE session_token=$1;"
+	_, err := db.Exec(query, token)
+	return err
 }

@@ -46,6 +46,22 @@ func TestEmailAlreadyExists(t *testing.T) {
 	assert.Equal(t, true, exists)
 }
 
+func TestGetUserLogin(t *testing.T) {
+	if _, err := db.Exec(`
+		INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3);
+	`, "bob@email.com", "pw", true); err != nil {
+		log.Fatal("Error inserting user: ", err)
+	}
+
+	_, _, _, err := GetUserLogin(db, "charlie@email.com")
+	assert.ErrorIs(t, sql.ErrNoRows, err)
+
+	_, passwordHash, emailVerified, err := GetUserLogin(db, "bob@email.com")
+	assert.Nil(t, err)
+	assert.Equal(t, passwordHash, "pw")
+	assert.Equal(t, emailVerified, true)
+}
+
 func TestCreateUser(t *testing.T) {
 	validateToken, err := CreateUser(db, "charlie@email.com", "")
 	assert.Nil(t, err)
