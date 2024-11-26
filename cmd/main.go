@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -30,13 +32,21 @@ func main() {
 
 	router := gin.Default()
 
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	router.GET("/health", api.GetHealth)
 	router.POST("/signup", func(c *gin.Context) { api.SignUp(c, db) })
 	router.POST("/signin", func(c *gin.Context) { api.SignIn(c, db) })
 
 	protected := router.Group("", auth.AuthMiddleware(db))
 	protected.GET("/protected", func(c *gin.Context) {})
-	// router.GET("/protected", func(c *gin.Context) { api.SignIn(c, db) })
 
 	// For running in production just use router.Run()
 	router.Run()
