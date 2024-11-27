@@ -134,6 +134,8 @@ func SignOut(c *gin.Context, db *sql.DB) {
 		return
 	}
 
+	c.SetCookie("session", "", -1, "/", "", true, true)
+
 	c.JSON(http.StatusOK, gin.H{})
 }
 
