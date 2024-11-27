@@ -18,6 +18,9 @@ var (
 	ErrInvalidPasswordFormat = "invalid password format or weak password"
 	ErrInvalidEmailFormat    = "invalid email format"
 	ErrInvalidFormat         = "invalid request format"
+	ErrValidateTokenExpired  = "validate token expired"
+	ErrValidateTokenNotExist = "validate token does not exist"
+	ErrEmailVerifiedAlready  = "email verified already"
 )
 
 type SignForm struct {
@@ -117,5 +120,48 @@ func SignIn(c *gin.Context, db *sql.DB) {
 	}
 
 	c.SetCookie("session", token, 24*60*60, "/", "", true, true)
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func Verify(c *gin.Context, db *sql.DB) {
+	var form struct {
+		Token string `json:"token"`
+	}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		return
+	}
+
+	id, expired, err := utils.GetLoginByValidateToken(db, form.Token)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusBadRequest, gin.H{"message": ErrValidateTokenNotExist, "error": "ErrValidateTokenNotExist"})
+			return
+		} else {
+			log.Fatal(err)
+			return
+		}
+	}
+
+	// If expired return error
+	if expired {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrValidateTokenExpired, "error": "ErrValidateTokenExpired"})
+		return
+	}
+
+	// It should never happen that there exists a token for a verified email
+	// This enforced by the fact that whenever an email is validated, the token
+	// is set to NULL through the utils.ValidateEmail function
+
+	// Validate Email
+	utils.ValidateEmail(db, id)
+
+	// Create new session and return
+	_, sessionToken, err := utils.CreateSession(db, id, c.Request.UserAgent(), c.ClientIP())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.SetCookie("session", sessionToken, 24*60*60, "/", "", true, true)
 	c.JSON(http.StatusOK, gin.H{})
 }

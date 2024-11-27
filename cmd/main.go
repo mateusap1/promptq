@@ -32,6 +32,7 @@ func main() {
 
 	router := gin.Default()
 
+	// Change Origins when running in production
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT"},
@@ -42,11 +43,14 @@ func main() {
 	}))
 
 	router.GET("/health", api.GetHealth)
-	router.POST("/signup", func(c *gin.Context) { api.SignUp(c, db) })
-	router.POST("/signin", func(c *gin.Context) { api.SignIn(c, db) })
 
-	protected := router.Group("", auth.AuthMiddleware(db))
-	protected.GET("/protected", func(c *gin.Context) {})
+	authRouter := router.Group("/auth")
+	authRouter.POST("/register", func(c *gin.Context) { api.SignUp(c, db) })
+	authRouter.POST("/login", func(c *gin.Context) { api.SignIn(c, db) })
+	authRouter.POST("/verify/email", func(c *gin.Context) { api.Verify(c, db) })
+
+	protectedRouter := router.Group("", auth.AuthMiddleware(db))
+	protectedRouter.GET("/protected", func(c *gin.Context) {})
 
 	// For running in production just use router.Run()
 	router.Run()

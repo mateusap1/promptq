@@ -140,3 +140,25 @@ func DeactivateSession(db *sql.DB, id int64) error {
 	_, err := db.Exec(query, id)
 	return err
 }
+
+func GetLoginByValidateToken(db *sql.DB, token string) (id int64, expired bool, err error) {
+	// Needs (unit) testing
+
+	var exp sql.NullTime
+	const query = "SELECT id, email_verified, validate_token_expires FROM users WHERE validate_token=$1;"
+	if err = db.QueryRow(query, token).Scan(&id, &exp); err != nil {
+		return -1, false, err
+	}
+
+	currentTime := time.Now().UTC()
+	return id, currentTime.After(exp.Time), nil
+}
+
+func ValidateEmail(db *sql.DB, id int64) error {
+	// Needs unit testing
+
+	const query = "UPDATE users SET email_verified=true, validate_token=NULL, validate_token_expires=NULL WHERE id=$1;"
+	_, err := db.Exec(query, id)
+
+	return err
+}
