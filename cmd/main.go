@@ -47,6 +47,7 @@ func main() {
 	authRouter := router.Group("/auth")
 	authRouter.POST("/register", func(c *gin.Context) { api.Register(c, db) })
 	authRouter.POST("/login", func(c *gin.Context) { api.Login(c, db) })
+	authRouter.POST("/signout", auth.AuthMiddleware(db), func(c *gin.Context) { api.SignOut(c, db) })
 
 	authRouter.POST("/email/validate", func(c *gin.Context) { api.ValidateEmail(c, db) })
 	authRouter.POST("/email/validate/resend", auth.AuthMiddleware(db), func(c *gin.Context) { api.ResendValidateEmail(c, db) })

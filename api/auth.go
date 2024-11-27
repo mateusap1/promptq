@@ -124,6 +124,19 @@ func Login(c *gin.Context, db *sql.DB) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
+func SignOut(c *gin.Context, db *sql.DB) {
+	// Requires auth middleware
+	sessionId := c.MustGet("sessionId").(int64)
+
+	err := utils.DeactivateSession(db, sessionId)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
 func ValidateEmail(c *gin.Context, db *sql.DB) {
 	var form struct {
 		Token string `json:"token"`
