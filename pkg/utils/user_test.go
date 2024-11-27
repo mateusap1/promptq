@@ -3,52 +3,15 @@ package utils
 import (
 	"database/sql"
 	"log"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func createMockUser(db *sql.DB, email string, passwordHash string, verified bool) (id int64) {
-	const query = "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, $3) RETURNING id;"
-	if err := db.QueryRow(query, email, passwordHash, verified).Scan(&id); err != nil {
-		log.Fatal("Error inserting user: ", err)
-	}
-
-	return id
-}
-
-func createMockSession(db *sql.DB, userId int64, userAgent string, ipAddress string, token string, active bool) (id int64) {
-	const query = "INSERT INTO sessions (user_id, user_agent, ip_address, session_token, active) VALUES ($1, $2, $3, $4, $5) RETURNING id;"
-	if err := db.QueryRow(query, userId, userAgent, ipAddress, token, active).Scan(&id); err != nil {
-		log.Fatal("Error inserting session: ", err)
-	}
-
-	return id
-}
-
-func TestValidEmailFormat(t *testing.T) {
-	assert.Equal(t, true, ValidEmailFormat("a@b"))
-	assert.Equal(t, false, ValidEmailFormat("@ba"))
-	assert.Equal(t, false, ValidEmailFormat("ab@"))
-	assert.Equal(t, false, ValidEmailFormat("a@"+strings.Repeat("a", 256)))
-}
-
-func TestValidPasswordFormat(t *testing.T) {
-	assert.Equal(t, true, ValidPasswordFormat("P@ssw0rd"))
-	assert.Equal(t, true, ValidPasswordFormat("Pass1-_*)!"))
-	assert.Equal(t, false, ValidPasswordFormat("password"))
-	assert.Equal(t, false, ValidPasswordFormat("pWd0!"))
-	assert.Equal(t, false, ValidPasswordFormat("pAssw0rd"))
-	assert.Equal(t, false, ValidPasswordFormat("12345a678@"))
-	assert.Equal(t, false, ValidPasswordFormat("12345A678!"))
-	assert.Equal(t, false, ValidPasswordFormat(strings.Repeat("a", 64)+"A@0"))
-}
-
 func TestEmailAlreadyExists(t *testing.T) {
 	db := setup()
 
-	createMockUser(db, "alice@email.com", "", false)
+	CreateMockUser(db, "alice@email.com", "", false)
 
 	exists, err := EmailAlreadyExists(db, "alice@email.com")
 	assert.Nil(t, err)
@@ -77,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 func TestGetUserLoginByEmail(t *testing.T) {
 	db := setup()
 
-	createMockUser(db, "alice@email.com", "pw", true)
+	CreateMockUser(db, "alice@email.com", "pw", true)
 
 	_, _, err := GetUserLoginByEmail(db, "bob@email.com")
 	assert.ErrorIs(t, sql.ErrNoRows, err)
@@ -92,8 +55,8 @@ func TestSessionByToken(t *testing.T) {
 
 	var err error
 
-	aliceId := createMockUser(db, "alice@email.com", "pw", true)
-	sessionId := createMockSession(db, aliceId, "agent1", "ip", "token", true)
+	aliceId := CreateMockUser(db, "alice@email.com", "pw", true)
+	sessionId := CreateMockSession(db, aliceId, "agent1", "ip", "token", true)
 
 	id, userId, active, _, err := GetSessionByToken(db, "token")
 	assert.Nil(t, err)
@@ -107,8 +70,8 @@ func TestGetActiveSession(t *testing.T) {
 
 	var err error
 
-	aliceId := createMockUser(db, "alice@email.com", "pw", true)
-	activeSessionId := createMockSession(db, aliceId, "agent1", "ip", "token", true)
+	aliceId := CreateMockUser(db, "alice@email.com", "pw", true)
+	activeSessionId := CreateMockSession(db, aliceId, "agent1", "ip", "token", true)
 
 	id, token, err := GetActiveSession(db, aliceId)
 	assert.Nil(t, err)
@@ -118,7 +81,7 @@ func TestGetActiveSession(t *testing.T) {
 	// Test with not active
 
 	// Creating a new session not active. Should not return it
-	createMockSession(db, aliceId, "agent2", "ip2", "token2", false)
+	CreateMockSession(db, aliceId, "agent2", "ip2", "token2", false)
 
 	id, token, err = GetActiveSession(db, aliceId)
 	assert.Nil(t, err)
@@ -126,7 +89,7 @@ func TestGetActiveSession(t *testing.T) {
 	assert.Equal(t, activeSessionId, id)
 
 	// If user has no sessions, should return error
-	bobId := createMockUser(db, "bob@email.com", "pw", true)
+	bobId := CreateMockUser(db, "bob@email.com", "pw", true)
 
 	_, _, err = GetActiveSession(db, bobId)
 	assert.Equal(t, sql.ErrNoRows, err)
@@ -135,7 +98,7 @@ func TestGetActiveSession(t *testing.T) {
 func TestCreateSession(t *testing.T) {
 	db := setup()
 
-	aliceId := createMockUser(db, "alice@email.com", "pw", true)
+	aliceId := CreateMockUser(db, "alice@email.com", "pw", true)
 
 	sessionId, sessionToken, err := CreateSession(db, aliceId, "ua", "ip")
 	assert.Nil(t, err)
@@ -159,8 +122,8 @@ func TestCreateSession(t *testing.T) {
 func TestDeactivateSession(t *testing.T) {
 	db := setup()
 
-	userId := createMockUser(db, "alice@email.com", "pwd", true)
-	sessionId := createMockSession(db, userId, "ua", "ip", "token", true)
+	userId := CreateMockUser(db, "alice@email.com", "pwd", true)
+	sessionId := CreateMockSession(db, userId, "ua", "ip", "token", true)
 
 	DeactivateSession(db, sessionId)
 	var active bool
