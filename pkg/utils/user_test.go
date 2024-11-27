@@ -62,14 +62,16 @@ func TestEmailAlreadyExists(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	db := setup()
 
-	expectedToken, err := CreateUser(db, "alice@email.com", "")
+	userId, expectedToken, err := CreateUser(db, "alice@email.com", "")
 	assert.Nil(t, err)
 
 	var token string
-	err = db.QueryRow("SELECT validate_token FROM users WHERE email=$1;", "alice@email.com").Scan(&token)
+	var expectedId int64
+	err = db.QueryRow("SELECT id, validate_token FROM users WHERE email=$1;", "alice@email.com").Scan(&expectedId, &token)
 	assert.Nil(t, err, "user was not created")
 
-	assert.Equal(t, token, expectedToken, "token returned is different")
+	assert.Equal(t, expectedId, userId)
+	assert.Equal(t, token, expectedToken)
 }
 
 func TestGetUserLoginByEmail(t *testing.T) {
@@ -77,13 +79,12 @@ func TestGetUserLoginByEmail(t *testing.T) {
 
 	createMockUser(db, "alice@email.com", "pw", true)
 
-	_, _, _, err := GetUserLoginByEmail(db, "bob@email.com")
+	_, _, err := GetUserLoginByEmail(db, "bob@email.com")
 	assert.ErrorIs(t, sql.ErrNoRows, err)
 
-	_, passwordHash, emailVerified, err := GetUserLoginByEmail(db, "alice@email.com")
+	_, passwordHash, err := GetUserLoginByEmail(db, "alice@email.com")
 	assert.Nil(t, err)
 	assert.Equal(t, passwordHash, "pw")
-	assert.Equal(t, emailVerified, true)
 }
 
 func TestSessionByToken(t *testing.T) {

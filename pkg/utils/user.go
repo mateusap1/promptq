@@ -54,23 +54,21 @@ func ValidPasswordFormat(password string) bool {
 	return true
 }
 
-func CreateUser(db *sql.DB, email, passwordHash string) (validateToken string, err error) {
+func CreateUser(db *sql.DB, email, passwordHash string) (id int64, validateToken string, err error) {
 	validateToken, err = GenerateToken()
 	if err != nil {
-		return "", err
+		return -1, "", err
 	}
 
 	confirmDuration := 24 * time.Hour
 	currentTime := time.Now().UTC()
 
-	query := "INSERT INTO users (email, password_hash, validate_token, validate_token_expires) VALUES ($1, $2, $3, $4)"
-	if _, err := db.Exec(query, email, passwordHash, validateToken, currentTime.Add(confirmDuration)); err != nil {
-		return "", err
+	query := "INSERT INTO users (email, password_hash, validate_token, validate_token_expires) VALUES ($1, $2, $3, $4) RETURNING id;"
+	if err := db.QueryRow(query, email, passwordHash, validateToken, currentTime.Add(confirmDuration)).Scan(&id); err != nil {
+		return -1, "", err
 	}
 
-	// Should return id as well
-
-	return validateToken, nil
+	return id, validateToken, nil
 }
 
 func SendValidationEmail(confirmToken string) error {
@@ -79,17 +77,17 @@ func SendValidationEmail(confirmToken string) error {
 	return nil
 }
 
-func GetUserLoginByEmail(db *sql.DB, email string) (id int64, passwordHash string, emailVerified bool, err error) {
-	if err = db.QueryRow("SELECT id, password_hash, email_verified FROM users WHERE email=$1;", email).Scan(&id, &passwordHash, &emailVerified); err != nil {
+func GetUserLoginByEmail(db *sql.DB, email string) (id int64, passwordHash string, err error) {
+	if err = db.QueryRow("SELECT id, password_hash FROM users WHERE email=$1;", email).Scan(&id, &passwordHash); err != nil {
 		// error sql.ErrNoRows means that the user does not exist
-		return -1, "", false, err
+		return -1, "", err
 	}
 
-	return id, passwordHash, emailVerified, nil
+	return id, passwordHash, nil
 }
 
 func EmailAlreadyExists(db *sql.DB, email string) (bool, error) {
-	_, _, _, err := GetUserLoginByEmail(db, email)
+	_, _, err := GetUserLoginByEmail(db, email)
 	if err == nil {
 		return true, nil
 	} else if err == sql.ErrNoRows {
@@ -141,17 +139,28 @@ func DeactivateSession(db *sql.DB, id int64) error {
 	return err
 }
 
-func GetLoginByValidateToken(db *sql.DB, token string) (id int64, expired bool, err error) {
+func GetUserByValidateToken(db *sql.DB, token string) (id int64, expired bool, err error) {
 	// Needs (unit) testing
 
 	var exp sql.NullTime
-	const query = "SELECT id, email_verified, validate_token_expires FROM users WHERE validate_token=$1;"
+	const query = "SELECT id, validate_token_expires FROM users WHERE validate_token=$1;"
 	if err = db.QueryRow(query, token).Scan(&id, &exp); err != nil {
 		return -1, false, err
 	}
 
 	currentTime := time.Now().UTC()
 	return id, currentTime.After(exp.Time), nil
+}
+
+func GetEmailValidatedById(db *sql.DB, id int64) (emailVerified bool, err error) {
+	// Needs unit testing
+
+	const query = "SELECT email_verified FROM users WHERE id=$1;"
+	if err = db.QueryRow(query, id).Scan(&emailVerified); err != nil {
+		return false, err
+	}
+
+	return emailVerified, nil
 }
 
 func ValidateEmail(db *sql.DB, id int64) error {
@@ -161,4 +170,24 @@ func ValidateEmail(db *sql.DB, id int64) error {
 	_, err := db.Exec(query, id)
 
 	return err
+}
+
+func UpdateEmailToken(db *sql.DB, id int64) (token string, err error) {
+	// Needs unit testing
+
+	validateToken, err := GenerateToken()
+	if err != nil {
+		return "", err
+	}
+
+	confirmDuration := 24 * time.Hour
+	currentTime := time.Now().UTC()
+
+	const query = "UPDATE users SET validate_token=$1, validate_token_expires=$2 WHERE id=$3"
+	_, err = db.Exec(query, validateToken, currentTime.Add(confirmDuration), id)
+	if err != nil {
+		return "", err
+	}
+
+	return validateToken, nil
 }

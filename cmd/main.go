@@ -45,9 +45,11 @@ func main() {
 	router.GET("/health", api.GetHealth)
 
 	authRouter := router.Group("/auth")
-	authRouter.POST("/register", func(c *gin.Context) { api.SignUp(c, db) })
-	authRouter.POST("/login", func(c *gin.Context) { api.SignIn(c, db) })
-	authRouter.POST("/verify/email", func(c *gin.Context) { api.Verify(c, db) })
+	authRouter.POST("/register", func(c *gin.Context) { api.Register(c, db) })
+	authRouter.POST("/login", func(c *gin.Context) { api.Login(c, db) })
+
+	authRouter.POST("/email/validate", func(c *gin.Context) { api.ValidateEmail(c, db) })
+	authRouter.POST("/email/validate/resend", auth.AuthMiddleware(db), func(c *gin.Context) { api.ResendValidateEmail(c, db) })
 
 	protectedRouter := router.Group("", auth.AuthMiddleware(db))
 	protectedRouter.GET("/protected", func(c *gin.Context) {})
