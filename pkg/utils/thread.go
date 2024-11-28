@@ -54,14 +54,14 @@ func CreateThread(db *sql.DB, userId int64, name string) (id int64, tid string, 
 }
 
 func RenameThread(db *sql.DB, threadId int64, name string) error {
-	const query = "UPDATE threads SET tname=$1 WHERE id=$2;"
+	const query = "UPDATE threads SET tname=$1, updated_at=CURRENT_TIMESTAMP WHERE id=$2;"
 	_, err := db.Exec(query, name, threadId)
 
 	return err
 }
 
 func DeleteThread(db *sql.DB, threadId int64) error {
-	const query = "UPDATE threads SET deleted=true WHERE id=$1;"
+	const query = "UPDATE threads SET deleted=true, updated_at=CURRENT_TIMESTAMP WHERE id=$1;"
 	_, err := db.Exec(query, threadId)
 
 	return err
