@@ -53,7 +53,9 @@ func main() {
 	authRouter.POST("/email/validate/resend", auth.AuthMiddleware(db), func(c *gin.Context) { api.ResendValidateEmail(c, db) })
 
 	protectedRouter := router.Group("", auth.AuthMiddleware(db))
-	protectedRouter.GET("/protected", func(c *gin.Context) {})
+
+	threadRouter := protectedRouter.Group("/thread")
+	threadRouter.POST("/create", func(c *gin.Context) { api.CreateThread(c, db) })
 
 	// For running in production just use router.Run()
 	router.Run()

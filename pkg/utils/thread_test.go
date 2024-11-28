@@ -46,15 +46,17 @@ func TestCreateThread(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
-	id, err := CreateThread(db, userId, "test")
+	id, tid, err := CreateThread(db, userId, "test")
 	assert.Nil(t, err)
 
 	var actualUserId int64
+	var actualTId string
 	var actualName string
-	err = db.QueryRow("SELECT user_id, tname FROM threads WHERE id=$1;", id).Scan(&actualUserId, &actualName)
+	err = db.QueryRow("SELECT user_id, tid, tname FROM threads WHERE id=$1;", id).Scan(&actualUserId, &actualTId, &actualName)
 	assert.Nil(t, err)
 
 	assert.Equal(t, actualUserId, userId)
+	assert.Equal(t, actualTId, tid)
 	assert.Equal(t, actualName, "test")
 }
 
