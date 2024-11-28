@@ -67,3 +67,12 @@ func CreateMockSession(db *sql.DB, userId int64, userAgent string, ipAddress str
 
 	return id
 }
+
+func CreateMockThread(db *sql.DB, userId int64, tid string, tname string, deleted bool) (id int64) {
+	const query = "INSERT INTO threads (user_id, tid, tname, deleted) VALUES ($1, $2, $3, $4) RETURNING id;"
+	if err := db.QueryRow(query, userId, tid, tname, deleted).Scan(&id); err != nil {
+		log.Fatal("Error inserting thread: ", err)
+	}
+
+	return id
+}

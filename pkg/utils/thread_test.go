@@ -7,6 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGetThread(t *testing.T) {
+	db := setup()
+
+	userId := CreateMockUser(db, "alice@email.com", "", true)
+	id := CreateMockThread(db, userId, "test_id", "test_name", false)
+
+	threadId, tname, deleted, err := GetThread(db, userId, "test_id")
+	assert.Nil(t, err)
+
+	assert.Equal(t, threadId, id)
+	assert.Equal(t, tname, "test_name")
+	assert.Equal(t, deleted, false)
+}
+
 func TestCreateThread(t *testing.T) {
 	db := setup()
 
