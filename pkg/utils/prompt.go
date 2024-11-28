@@ -3,8 +3,8 @@ package utils
 import "database/sql"
 
 type Message struct {
-	content string
-	ai      bool
+	Content string `json:"content"`
+	AI      bool   `json:"ai"`
 }
 
 func SendMessage(db *sql.DB, threadId int64, content string, ai bool) error {

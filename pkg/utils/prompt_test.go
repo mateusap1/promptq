@@ -41,7 +41,7 @@ func TestGetMessages(t *testing.T) {
 	assert.Equal(t, len(messages), 5)
 
 	for i := range 5 {
-		assert.Equal(t, fmt.Sprintf("content_%v", i), messages[i].content)
-		assert.Equal(t, i%3 == 0, messages[i].ai)
+		assert.Equal(t, fmt.Sprintf("content_%v", i), messages[i].Content)
+		assert.Equal(t, i%3 == 0, messages[i].AI)
 	}
 }

@@ -16,8 +16,7 @@ func AuthThreadMiddleware(db *sql.DB) gin.HandlerFunc {
 		threadUserId := c.MustGet("threadUserId").(int64)
 
 		// Requires auth middleware
-		userId := c.MustGet("userId").(int64)
-		if threadUserId != userId {
+		if value, exists := c.Get("userId"); !exists || value.(int64) != threadUserId {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": ErrNoPermission, "error": "ErrNoPermission"})
 			return
 		}

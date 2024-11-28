@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -55,7 +56,15 @@ func AnswerPrompt(c *gin.Context, db *sql.DB) {
 }
 
 func GetMessages(c *gin.Context, db *sql.DB) {
-	// threadId := c.MustGet("threadId").(int64)
+	threadId := c.MustGet("threadId").(int64)
 
-	// utils.GetMessages(db, )
+	messages, err := utils.GetMessages(db, threadId)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	fmt.Printf("%v", messages)
+
+	c.JSON(http.StatusOK, gin.H{"messages": messages})
 }

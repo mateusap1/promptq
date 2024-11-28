@@ -64,7 +64,8 @@ func main() {
 	threadRouter.POST("/:tid/rename", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.RenameThread(c, db) })
 
 	promptRouter := threadRouter.Group("/:tid/prompt", thread.ThreadMiddleware(db))
-	promptRouter.POST("/send", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.SendPrompt(c, db) })
+	promptRouter.GET("/messages", auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.GetMessages(c, db) })
+	promptRouter.POST("/send", auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.SendPrompt(c, db) })
 	promptRouter.POST("/answer", func(c *gin.Context) { api.AnswerPrompt(c, db) })
 
 	// For running in production just use router.Run()
