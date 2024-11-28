@@ -43,6 +43,14 @@ func setup() (db *sql.DB) {
 			created_at TIMESTAMP DEFAULT NOW,
 			updated_at TIMESTAMP
 		);
+
+		CREATE TABLE prompts (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			thread_id INTEGER NOT NULL REFERENCES threads ON DELETE CASCADE,
+			ai BOOLEAN DEFAULT false NOT NULL,
+			content VARCHAR NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW
+		);
     `); err != nil {
 		log.Fatal("Error creating tables: ", err)
 	}
