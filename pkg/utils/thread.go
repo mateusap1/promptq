@@ -21,7 +21,7 @@ func GetThread(db *sql.DB, userId int64, tid string) (id int64, name string, del
 }
 
 func GetThreads(db *sql.DB, userId int64) (threads []Thread, err error) {
-	const query = "SELECT tid, tname FROM threads WHERE user_id=$1 ORDER BY updated_at DESC, created_at DESC;"
+	const query = "SELECT tid, tname FROM threads WHERE user_id=$1 AND deleted=false ORDER BY updated_at DESC, created_at DESC;"
 	rows, err := db.Query(query, userId)
 	if err != nil {
 		return []Thread{}, err
@@ -51,4 +51,18 @@ func CreateThread(db *sql.DB, userId int64, name string) (id int64, err error) {
 	}
 
 	return id, nil
+}
+
+func RenameThread(db *sql.DB, userId int64, tid string, name string) error {
+	const query = "UPDATE threads SET tname=$1 WHERE user_id=$2 AND tid=$3;"
+	_, err := db.Exec(query, name, userId, tid)
+
+	return err
+}
+
+func DeleteThread(db *sql.DB, userId int64, tid string) error {
+	const query = "UPDATE threads SET deleted=true WHERE user_id=$1 AND tid=$2;"
+	_, err := db.Exec(query, userId, tid)
+
+	return err
 }

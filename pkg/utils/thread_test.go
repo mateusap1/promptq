@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,6 +30,8 @@ func TestGetThreads(t *testing.T) {
 		CreateMockThread(db, userId, fmt.Sprintf("id_%v", i), fmt.Sprintf("name_%v", i), false)
 	}
 
+	CreateMockThread(db, userId, "id_deleted", "name_deleted", true)
+
 	threads, err := GetThreads(db, userId)
 	assert.Nil(t, err)
 	assert.Equal(t, len(threads), 5)
@@ -49,11 +50,38 @@ func TestCreateThread(t *testing.T) {
 	assert.Nil(t, err)
 
 	var actualUserId int64
-	var actualTName string
-	if err := db.QueryRow("SELECT user_id, tname FROM threads WHERE id=$1;", id).Scan(&actualUserId, &actualTName); err != nil {
-		log.Fatal(err)
-	}
+	var actualName string
+	err = db.QueryRow("SELECT user_id, tname FROM threads WHERE id=$1;", id).Scan(&actualUserId, &actualName)
+	assert.Nil(t, err)
 
 	assert.Equal(t, actualUserId, userId)
-	assert.Equal(t, actualTName, "test")
+	assert.Equal(t, actualName, "test")
+}
+
+func TestRenameThread(t *testing.T) {
+	db := setup()
+
+	userId := CreateMockUser(db, "alice@email.com", "", true)
+	id := CreateMockThread(db, userId, "tid", "tname", false)
+
+	RenameThread(db, userId, "tid", "new_name")
+
+	var actualName string
+	err := db.QueryRow("SELECT tname FROM threads WHERE id=$1;", id).Scan(&actualName)
+	assert.Nil(t, err)
+	assert.Equal(t, "new_name", actualName)
+}
+
+func TestDeleteThread(t *testing.T) {
+	db := setup()
+
+	userId := CreateMockUser(db, "alice@email.com", "", true)
+	id := CreateMockThread(db, userId, "tid", "tname", false)
+
+	DeleteThread(db, userId, "tid")
+
+	var deleted bool
+	err := db.QueryRow("SELECT deleted FROM threads WHERE id=$1;", id).Scan(&deleted)
+	assert.Nil(t, err)
+	assert.Equal(t, true, deleted)
 }
