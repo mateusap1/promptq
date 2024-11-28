@@ -133,37 +133,3 @@ func TestDeactivateSession(t *testing.T) {
 
 	assert.Equal(t, active, false)
 }
-
-func setup() (db *sql.DB) {
-	db = OpenSQLite(":memory:")
-
-	if _, err := db.Exec(`
-		CREATE TABLE users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			email VARCHAR NOT NULL,
-			password_hash VARCHAR NOT NULL,
-			email_verified BOOLEAN DEFAULT FALSE NOT NULL,
-			validate_token VARCHAR NULL,
-			validate_token_expires TIMESTAMP NULL,
-			reset_token VARCHAR NULL,
-			reset_token_expires TIMESTAMP NULL,
-			created_at TIMESTAMP DEFAULT NOW,
-			updated_at TIMESTAMP
-		);
-
-		CREATE TABLE sessions (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			user_id INTEGER NOT NULL REFERENCES users ON DELETE CASCADE,
-			user_agent VARCHAR NOT NULL,
-			ip_address VARCHAR NOT NULL,
-			session_token VARCHAR NOT NULL,
-			active BOOLEAN DEFAULT TRUE NOT NULL,
-			created_at TIMESTAMP DEFAULT NOW,
-			expires_at TIMESTAMP
-		);
-    `); err != nil {
-		log.Fatal("Error creating tables: ", err)
-	}
-
-	return db
-}
