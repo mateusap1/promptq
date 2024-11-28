@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 	"strings"
 
@@ -32,7 +31,7 @@ func startSession(c *gin.Context, db *sql.DB, id int64) error {
 func Register(c *gin.Context, db *sql.DB) {
 	var form SignForm
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
 		return
 	}
 
@@ -40,36 +39,36 @@ func Register(c *gin.Context, db *sql.DB) {
 	password := form.Password
 
 	if !utils.ValidEmailFormat(email) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidEmailFormat, "error": "ErrInvalidEmailFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidEmailFormat, "error": "ErrInvalidEmailFormat"})
 		return
 	}
 
 	if !utils.ValidPasswordFormat(password) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidPasswordFormat, "error": "ErrInvalidPasswordFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidPasswordFormat, "error": "ErrInvalidPasswordFormat"})
 		return
 	}
 
 	exists, err := utils.EmailAlreadyExists(db, email)
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	if exists {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrEmailExists, "error": "ErrEmailExists"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrEmailExists, "error": "ErrEmailExists"})
 		return
 	}
 
 	passwordHash := utils.EncodePassword(password)
 	userId, confirmToken, err := utils.CreateUser(db, email, passwordHash)
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Send validation e-mail
 	if err := utils.SendValidationEmail(confirmToken); err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -81,7 +80,7 @@ func Register(c *gin.Context, db *sql.DB) {
 func Login(c *gin.Context, db *sql.DB) {
 	var form SignForm
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
 		return
 	}
 
@@ -92,20 +91,20 @@ func Login(c *gin.Context, db *sql.DB) {
 	userId, passwordHash, err := utils.GetUserLoginByEmail(db, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			c.JSON(http.StatusBadRequest, gin.H{"message": ErrNoAccountEmail, "error": "ErrNoAccountEmail"})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrNoAccountEmail, "error": "ErrNoAccountEmail"})
 			return
 		} else {
-			log.Fatal(err)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
 
 	// Check password
 	if rightPassword, err := utils.ComparePasswordAndHash(password, passwordHash); err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	} else if !rightPassword {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrWrongPassword, "error": "ErrWrongPassword"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrWrongPassword, "error": "ErrWrongPassword"})
 		return
 	}
 
@@ -121,7 +120,7 @@ func SignOut(c *gin.Context, db *sql.DB) {
 
 	err := utils.DeactivateSession(db, sessionId)
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -135,24 +134,24 @@ func ValidateEmail(c *gin.Context, db *sql.DB) {
 		Token string `json:"token"`
 	}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
 		return
 	}
 
 	id, expired, err := utils.GetUserByValidateToken(db, form.Token)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			c.JSON(http.StatusBadRequest, gin.H{"message": ErrValidateTokenNotExist, "error": "ErrValidateTokenNotExist"})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrValidateTokenNotExist, "error": "ErrValidateTokenNotExist"})
 			return
 		} else {
-			log.Fatal(err)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
 
 	// If expired return error
 	if expired {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrValidateTokenExpired, "error": "ErrValidateTokenExpired"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrValidateTokenExpired, "error": "ErrValidateTokenExpired"})
 		return
 	}
 
@@ -163,14 +162,14 @@ func ValidateEmail(c *gin.Context, db *sql.DB) {
 	// Validate Email
 	err = utils.ValidateEmail(db, id)
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Create new session and return
 	_, sessionToken, err := utils.CreateSession(db, id, c.Request.UserAgent(), c.ClientIP())
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -185,24 +184,24 @@ func ResendValidateEmail(c *gin.Context, db *sql.DB) {
 	// Make sure the user has not been verified yet
 	emailValidated, err := utils.GetEmailValidatedById(db, userId)
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	if emailValidated {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrEmailVerifiedAlready, "error": "ErrEmailVerifiedAlready"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrEmailVerifiedAlready, "error": "ErrEmailVerifiedAlready"})
 		return
 	}
 
 	token, err := utils.UpdateEmailToken(db, userId)
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Send validation e-mail
 	if err := utils.SendValidationEmail(token); err != nil {
-		log.Fatal(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
