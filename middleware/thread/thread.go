@@ -16,7 +16,7 @@ func ThreadMiddleware(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tid := c.Param("tid")
 
-		id, name, deleted, err := utils.GetThread(db, tid)
+		id, userId, name, deleted, err := utils.GetThread(db, tid)
 		if err == sql.ErrNoRows || deleted {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": ErrDoesNotExist, "error": "ErrDoesNotExist"})
 			return
@@ -26,6 +26,7 @@ func ThreadMiddleware(db *sql.DB) gin.HandlerFunc {
 		}
 
 		c.Set("threadId", id)
+		c.Set("threadUserId", userId)
 		c.Set("threadName", name)
 
 		c.Next()

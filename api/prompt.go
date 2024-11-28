@@ -53,3 +53,9 @@ func AnswerPrompt(c *gin.Context, db *sql.DB) {
 
 	c.JSON(http.StatusOK, gin.H{})
 }
+
+func GetMessages(c *gin.Context, db *sql.DB) {
+	// threadId := c.MustGet("threadId").(int64)
+
+	// utils.GetMessages(db, )
+}

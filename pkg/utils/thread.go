@@ -11,13 +11,13 @@ type Thread struct {
 	Name       string `json:"name"`
 }
 
-func GetThread(db *sql.DB, tid string) (id int64, name string, deleted bool, err error) {
-	const query = "SELECT id, tname, deleted FROM threads WHERE tid=$1;"
-	if err = db.QueryRow(query, tid).Scan(&id, &name, &deleted); err != nil {
-		return -1, "", false, err
+func GetThread(db *sql.DB, tid string) (id int64, userId int64, name string, deleted bool, err error) {
+	const query = "SELECT id, user_id, tname, deleted FROM threads WHERE tid=$1;"
+	if err = db.QueryRow(query, tid).Scan(&id, &userId, &name, &deleted); err != nil {
+		return -1, -1, "", false, err
 	}
 
-	return id, name, deleted, nil
+	return id, userId, name, deleted, nil
 }
 
 func GetThreads(db *sql.DB, userId int64) (threads []Thread, err error) {

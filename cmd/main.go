@@ -11,6 +11,7 @@ import (
 
 	"github.com/mateusap1/promptq/api"
 	"github.com/mateusap1/promptq/middleware/auth"
+	auththread "github.com/mateusap1/promptq/middleware/auth_thread"
 	"github.com/mateusap1/promptq/middleware/thread"
 	"github.com/mateusap1/promptq/pkg/utils"
 )
@@ -59,11 +60,11 @@ func main() {
 	threadRouter.GET("/all", func(c *gin.Context) { api.GetThreads(c, db) })
 	threadRouter.POST("/create", func(c *gin.Context) { api.CreateThread(c, db) })
 
-	threadRouter.DELETE("/:tid", thread.ThreadMiddleware(db), func(c *gin.Context) { api.DeleteThread(c, db) })
-	threadRouter.POST("/:tid/rename", thread.ThreadMiddleware(db), func(c *gin.Context) { api.RenameThread(c, db) })
+	threadRouter.DELETE("/:tid", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.DeleteThread(c, db) })
+	threadRouter.POST("/:tid/rename", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.RenameThread(c, db) })
 
 	promptRouter := threadRouter.Group("/:tid/prompt", thread.ThreadMiddleware(db))
-	promptRouter.POST("/send", auth.AuthMiddleware(db), func(c *gin.Context) { api.SendPrompt(c, db) })
+	promptRouter.POST("/send", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.SendPrompt(c, db) })
 	promptRouter.POST("/answer", func(c *gin.Context) { api.AnswerPrompt(c, db) })
 
 	// For running in production just use router.Run()
