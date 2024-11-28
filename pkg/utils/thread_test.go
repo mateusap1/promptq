@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -19,6 +20,25 @@ func TestGetThread(t *testing.T) {
 	assert.Equal(t, threadId, id)
 	assert.Equal(t, tname, "test_name")
 	assert.Equal(t, deleted, false)
+}
+
+func TestGetThreads(t *testing.T) {
+	db := setup()
+
+	userId := CreateMockUser(db, "alice@email.com", "", true)
+
+	for i := range 5 {
+		CreateMockThread(db, userId, fmt.Sprintf("id_%v", i), fmt.Sprintf("name_%v", i), false)
+	}
+
+	threads, err := GetThreads(db, userId)
+	assert.Nil(t, err)
+	assert.Equal(t, len(threads), 5)
+
+	for i := range 5 {
+		assert.Equal(t, fmt.Sprintf("id_%v", i), threads[i].Identifier)
+		assert.Equal(t, fmt.Sprintf("name_%v", i), threads[i].Name)
+	}
 }
 
 func TestCreateThread(t *testing.T) {

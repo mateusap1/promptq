@@ -6,6 +6,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type Thread struct {
+	Identifier string `json:"id"`
+	Name       string `json:"name"`
+}
+
 func GetThread(db *sql.DB, userId int64, tid string) (id int64, name string, deleted bool, err error) {
 	const query = "SELECT id, tname, deleted FROM threads WHERE user_id=$1 AND tid=$2;"
 	if err = db.QueryRow(query, userId, tid).Scan(&id, &name, &deleted); err != nil {
@@ -13,6 +18,29 @@ func GetThread(db *sql.DB, userId int64, tid string) (id int64, name string, del
 	}
 
 	return id, name, deleted, nil
+}
+
+func GetThreads(db *sql.DB, userId int64) (threads []Thread, err error) {
+	const query = "SELECT tid, tname FROM threads WHERE user_id=$1 ORDER BY updated_at DESC, created_at DESC;"
+	rows, err := db.Query(query, userId)
+	if err != nil {
+		return []Thread{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			tid  string
+			name string
+		)
+		if err := rows.Scan(&tid, &name); err != nil {
+			return []Thread{}, err
+		}
+
+		threads = append(threads, Thread{tid, name})
+	}
+
+	return threads, nil
 }
 
 func CreateThread(db *sql.DB, userId int64, name string) (id int64, err error) {
