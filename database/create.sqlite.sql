@@ -21,3 +21,14 @@ CREATE TABLE sessions (
     created_at TIMESTAMP DEFAULT NOW,
     expires_at TIMESTAMP
 );
+
+CREATE TABLE threads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users ON DELETE CASCADE,
+    tid VARCHAR NOT NULL,
+    tname VARCHAR NOT NULL,
+    deleted BOOLEAN DEFAULT false NOT NULL,
+    deleted_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW,
+    updated_at TIMESTAMP
+);

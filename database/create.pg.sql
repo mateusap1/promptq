@@ -17,7 +17,18 @@ CREATE TABLE sessions (
     user_agent VARCHAR NOT NULL,
     ip_address VARCHAR NOT NULL,
     session_token VARCHAR NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
+    active BOOLEAN DEFAULT TRUE NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     expires_at TIMESTAMP
+);
+
+CREATE TABLE threads (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users ON DELETE CASCADE,
+    tid VARCHAR NOT NULL,
+    tname VARCHAR NOT NULL,
+    deleted BOOLEAN DEFAULT false NOT NULL,
+    deleted_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP
 );
