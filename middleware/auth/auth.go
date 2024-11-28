@@ -10,16 +10,18 @@ import (
 	"github.com/mateusap1/promptq/pkg/utils"
 )
 
-var ErrInvalidSession = "session token does't exist"
-var ErrInactiveSession = "session token is inactive"
-var ErrExpiredSession = "session token has expired"
+var (
+	ErrInvalidSession  = "session token does't exist"
+	ErrInactiveSession = "session token is inactive"
+	ErrExpiredSession  = "session token has expired"
+)
 
 func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("session")
 		if err != nil {
 			if err == http.ErrNoCookie {
-				c.JSON(http.StatusUnauthorized, gin.H{"message": http.ErrNoCookie.Error(), "error": "ErrNoCookie"})
+				c.AbortWithError(http.StatusUnauthorized, http.ErrNoCookie)
 				return
 			} else {
 				log.Fatal(err)
@@ -30,7 +32,7 @@ func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
 		sessionId, userId, active, expiresAt, err := utils.GetSessionByToken(db, token)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				c.JSON(http.StatusUnauthorized, gin.H{"message": ErrInvalidSession, "error": "ErrInvalidSession"})
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": ErrInvalidSession, "error": "ErrInvalidSession"})
 				return
 			}
 			log.Fatal(err)
@@ -38,10 +40,10 @@ func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
 		}
 
 		if !active {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": ErrInactiveSession, "error": "ErrInactiveSession"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": ErrInactiveSession, "error": "ErrInactiveSession"})
 			return
 		} else if time.Now().UTC().After(expiresAt) {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": ErrExpiredSession, "error": "ErrExpiredSession"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": ErrExpiredSession, "error": "ErrExpiredSession"})
 			return
 		}
 

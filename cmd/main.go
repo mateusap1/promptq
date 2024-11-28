@@ -10,7 +10,8 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/mateusap1/promptq/api"
-	auth "github.com/mateusap1/promptq/middleware"
+	"github.com/mateusap1/promptq/middleware/auth"
+	"github.com/mateusap1/promptq/middleware/thread"
 	"github.com/mateusap1/promptq/pkg/utils"
 )
 
@@ -35,7 +36,7 @@ func main() {
 	// Change Origins when running in production
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -56,6 +57,9 @@ func main() {
 
 	threadRouter := protectedRouter.Group("/thread")
 	threadRouter.POST("/create", func(c *gin.Context) { api.CreateThread(c, db) })
+
+	threadRouter.DELETE("/:tid", thread.ThreadMiddleware(db), func(c *gin.Context) { api.DeleteThread(c, db) })
+	threadRouter.POST("/:tid/rename", thread.ThreadMiddleware(db), func(c *gin.Context) { api.RenameThread(c, db) })
 
 	// For running in production just use router.Run()
 	router.Run()

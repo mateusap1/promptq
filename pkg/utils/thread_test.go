@@ -66,7 +66,7 @@ func TestRenameThread(t *testing.T) {
 	userId := CreateMockUser(db, "alice@email.com", "", true)
 	id := CreateMockThread(db, userId, "tid", "tname", false)
 
-	RenameThread(db, userId, "tid", "new_name")
+	RenameThread(db, id, "new_name")
 
 	var actualName string
 	err := db.QueryRow("SELECT tname FROM threads WHERE id=$1;", id).Scan(&actualName)
@@ -80,7 +80,7 @@ func TestDeleteThread(t *testing.T) {
 	userId := CreateMockUser(db, "alice@email.com", "", true)
 	id := CreateMockThread(db, userId, "tid", "tname", false)
 
-	DeleteThread(db, userId, "tid")
+	DeleteThread(db, id)
 
 	var deleted bool
 	err := db.QueryRow("SELECT deleted FROM threads WHERE id=$1;", id).Scan(&deleted)
