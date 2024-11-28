@@ -13,7 +13,7 @@ func TestGetThread(t *testing.T) {
 	userId := CreateMockUser(db, "alice@email.com", "", true)
 	id := CreateMockThread(db, userId, "test_id", "test_name", false)
 
-	threadId, tname, deleted, err := GetThread(db, userId, "test_id")
+	threadId, tname, deleted, err := GetThread(db, "test_id")
 	assert.Nil(t, err)
 
 	assert.Equal(t, threadId, id)

@@ -14,12 +14,9 @@ var (
 
 func ThreadMiddleware(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Requires auth middleware
-		userId := c.MustGet("userId").(int64)
-
 		tid := c.Param("tid")
 
-		id, name, deleted, err := utils.GetThread(db, userId, tid)
+		id, name, deleted, err := utils.GetThread(db, tid)
 		if err == sql.ErrNoRows || deleted {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": ErrDoesNotExist, "error": "ErrDoesNotExist"})
 			return

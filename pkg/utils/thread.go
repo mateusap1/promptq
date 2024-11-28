@@ -11,9 +11,9 @@ type Thread struct {
 	Name       string `json:"name"`
 }
 
-func GetThread(db *sql.DB, userId int64, tid string) (id int64, name string, deleted bool, err error) {
-	const query = "SELECT id, tname, deleted FROM threads WHERE user_id=$1 AND tid=$2;"
-	if err = db.QueryRow(query, userId, tid).Scan(&id, &name, &deleted); err != nil {
+func GetThread(db *sql.DB, tid string) (id int64, name string, deleted bool, err error) {
+	const query = "SELECT id, tname, deleted FROM threads WHERE tid=$1;"
+	if err = db.QueryRow(query, tid).Scan(&id, &name, &deleted); err != nil {
 		return -1, "", false, err
 	}
 

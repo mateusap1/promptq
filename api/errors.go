@@ -10,4 +10,5 @@ var (
 	ErrValidateTokenExpired  = "validate token expired"
 	ErrValidateTokenNotExist = "validate token does not exist"
 	ErrEmailVerifiedAlready  = "email verified already"
+	ErrAdminRequired         = "only admins can perform this action"
 )

@@ -17,7 +17,7 @@ func SendMessage(db *sql.DB, threadId int64, content string, ai bool) error {
 }
 
 func GetMessages(db *sql.DB, threadId int64) (messages []Message, err error) {
-	const query = "SELECT content, ai FROM prompts WHERE thread_id=$1;"
+	const query = "SELECT content, ai FROM prompts WHERE thread_id=$1 ORDER BY created_at;"
 	rows, err := db.Query(query, threadId)
 	if err != nil {
 		return []Message{}, err
