@@ -84,3 +84,12 @@ func CreateMockThread(db *sql.DB, userId int64, tid string, tname string, delete
 
 	return id
 }
+
+func CreateMockPrompt(db *sql.DB, threadId int64, content string, ai bool) (id int64) {
+	const query = "INSERT INTO prompts (thread_id, content, ai) VALUES ($1, $2, $3) RETURNING id;"
+	if err := db.QueryRow(query, threadId, content, ai).Scan(&id); err != nil {
+		log.Fatal("Error inserting prompt: ", err)
+	}
+
+	return id
+}
