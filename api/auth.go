@@ -33,7 +33,10 @@ func startSession(c *gin.Context, db *sql.DB, id int64) error {
 		return err
 	}
 
-	c.SetCookie("session", token, 24*60*60, "/", "", true, true)
+	// c.SetCookie("session", token, 24*60*60, "/", "", true, true)
+
+	// TODO: IMPORTANT! Change this to have httpOnly true
+	c.SetCookie("session", token, 24*60*60, "/", "", true, false)
 
 	return nil
 }
