@@ -29,6 +29,19 @@ func CreateThread(c *gin.Context, db *sql.DB) {
 	c.JSON(http.StatusOK, gin.H{"threadId": tid})
 }
 
+func GetThreads(c *gin.Context, db *sql.DB) {
+	// Requires auth middleware
+	userId := c.MustGet("userId").(int64)
+
+	threads, err := utils.GetThreads(db, userId)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"threads": threads})
+}
+
 func DeleteThread(c *gin.Context, db *sql.DB) {
 	// Required thread middleware
 	threadId := c.MustGet("threadId").(int64)

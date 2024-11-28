@@ -56,6 +56,7 @@ func main() {
 	protectedRouter := router.Group("", auth.AuthMiddleware(db))
 
 	threadRouter := protectedRouter.Group("/thread")
+	threadRouter.GET("/all", func(c *gin.Context) { api.GetThreads(c, db) })
 	threadRouter.POST("/create", func(c *gin.Context) { api.CreateThread(c, db) })
 
 	threadRouter.DELETE("/:tid", thread.ThreadMiddleware(db), func(c *gin.Context) { api.DeleteThread(c, db) })
