@@ -17,7 +17,7 @@ func CreateThread(c *gin.Context, db *sql.DB) {
 		Name string `json:"name"`
 	}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
 		return
 	}
 
@@ -61,7 +61,7 @@ func RenameThread(c *gin.Context, db *sql.DB) {
 		Name string `json:"name"`
 	}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidFormat, "error": "ErrInvalidFormat"})
 		return
 	}
 

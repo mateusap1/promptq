@@ -62,6 +62,9 @@ func main() {
 	threadRouter.DELETE("/:tid", thread.ThreadMiddleware(db), func(c *gin.Context) { api.DeleteThread(c, db) })
 	threadRouter.POST("/:tid/rename", thread.ThreadMiddleware(db), func(c *gin.Context) { api.RenameThread(c, db) })
 
+	promptRouter := router.Group("/thread/:tid/prompt")
+	promptRouter.POST("/send", auth.AuthMiddleware(db), thread.ThreadMiddleware(db), func(c *gin.Context) { api.SendPrompt(c, db) })
+
 	// For running in production just use router.Run()
 	router.Run()
 }
