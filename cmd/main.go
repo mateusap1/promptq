@@ -60,6 +60,7 @@ func main() {
 	threadRouter.GET("/all", func(c *gin.Context) { api.GetThreads(c, db) })
 	threadRouter.POST("/create", func(c *gin.Context) { api.CreateThread(c, db) })
 
+	threadRouter.GET("/:tid", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.GetThread(c, db) })
 	threadRouter.DELETE("/:tid", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.DeleteThread(c, db) })
 	threadRouter.POST("/:tid/rename", thread.ThreadMiddleware(db), auththread.AuthThreadMiddleware(db), func(c *gin.Context) { api.RenameThread(c, db) })
 

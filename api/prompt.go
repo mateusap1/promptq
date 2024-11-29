@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -63,8 +62,6 @@ func GetMessages(c *gin.Context, db *sql.DB) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-
-	fmt.Printf("%v", messages)
 
 	c.JSON(http.StatusOK, gin.H{"messages": messages})
 }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -29,6 +30,22 @@ func CreateThread(c *gin.Context, db *sql.DB) {
 	c.JSON(http.StatusOK, gin.H{"threadId": tid})
 }
 
+func GetThread(c *gin.Context, db *sql.DB) {
+	// Requires thread middleware
+	threadId := c.MustGet("threadId").(int64)
+	threadName := c.MustGet("threadName").(string)
+
+	messages, err := utils.GetMessages(db, threadId)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	fmt.Printf("messages %v", messages)
+
+	c.JSON(http.StatusOK, utils.ThreadResponse{Name: threadName, Messages: messages})
+}
+
 func GetThreads(c *gin.Context, db *sql.DB) {
 	// Requires auth middleware
 	userId := c.MustGet("userId").(int64)
@@ -39,7 +56,7 @@ func GetThreads(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"threads": threads})
+	c.JSON(http.StatusOK, threads)
 }
 
 func DeleteThread(c *gin.Context, db *sql.DB) {
