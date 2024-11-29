@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -40,8 +39,6 @@ func GetThread(c *gin.Context, db *sql.DB) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-
-	fmt.Printf("messages %v", messages)
 
 	c.JSON(http.StatusOK, utils.ThreadResponse{Name: threadName, Messages: messages})
 }
