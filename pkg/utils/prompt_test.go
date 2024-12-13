@@ -11,7 +11,7 @@ func TestSendMessage(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
-	threadId := CreateMockThread(db, userId, "tid", "tname", false)
+	threadId := CreateMockThread(db, userId, "tid", "tname", false, false)
 
 	err := SendMessage(db, threadId, "Hello there!", false)
 	assert.Nil(t, err)
@@ -30,7 +30,7 @@ func TestGetMessages(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
-	threadId := CreateMockThread(db, userId, "tid", "tname", false)
+	threadId := CreateMockThread(db, userId, "tid", "tname", false, false)
 
 	for i := range 5 {
 		CreateMockPrompt(db, threadId, fmt.Sprintf("content_%v", i), i%3 == 0)

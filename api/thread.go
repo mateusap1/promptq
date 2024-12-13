@@ -43,6 +43,23 @@ func GetThread(c *gin.Context, db *sql.DB) {
 	c.JSON(http.StatusOK, utils.ThreadResponse{Name: threadName, Messages: messages})
 }
 
+func GetPendingThreads(c *gin.Context, db *sql.DB) {
+	// Requires auth middleware
+	admin := c.MustGet("admin").(bool)
+	if !admin {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": ErrAdminRequired, "error": "ErrAdminRequired"})
+		return
+	}
+
+	threads, err := utils.GetPendingThreads(db)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, threads)
+}
+
 func GetThreads(c *gin.Context, db *sql.DB) {
 	// Requires auth middleware
 	userId := c.MustGet("userId").(int64)

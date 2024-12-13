@@ -1,7 +1,0 @@
-version: '3.8'
-services:
-  promptq:
-    image: promptq:latest
-    build: ./
-    ports:
-      - "8080:8080"

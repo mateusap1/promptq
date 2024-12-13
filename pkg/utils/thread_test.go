@@ -11,7 +11,7 @@ func TestGetThread(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
-	id := CreateMockThread(db, userId, "test_id", "test_name", false)
+	id := CreateMockThread(db, userId, "test_id", "test_name", false, false)
 
 	threadId, actualUserId, tname, deleted, err := GetThread(db, "test_id")
 	assert.Nil(t, err)
@@ -22,16 +22,38 @@ func TestGetThread(t *testing.T) {
 	assert.Equal(t, deleted, false)
 }
 
+func TestGetPendingThreads(t *testing.T) {
+	db := setup()
+
+	userId := CreateMockUser(db, "alice@email.com", "", true)
+
+	for i := range 5 {
+		CreateMockThread(db, userId, fmt.Sprintf("id_%v", i), fmt.Sprintf("name_%v", i), false, true)
+	}
+
+	CreateMockThread(db, userId, "id_deleted", "name_deleted", true, true)
+	CreateMockThread(db, userId, "id_not_pending", "name_not_pending", true, false)
+
+	threads, err := GetThreads(db, userId)
+	assert.Nil(t, err)
+	assert.Equal(t, len(threads), 5)
+
+	for i := range 5 {
+		assert.Equal(t, fmt.Sprintf("id_%v", i), threads[i].Identifier)
+		assert.Equal(t, fmt.Sprintf("name_%v", i), threads[i].Name)
+	}
+}
+
 func TestGetThreads(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
 
 	for i := range 5 {
-		CreateMockThread(db, userId, fmt.Sprintf("id_%v", i), fmt.Sprintf("name_%v", i), false)
+		CreateMockThread(db, userId, fmt.Sprintf("id_%v", i), fmt.Sprintf("name_%v", i), false, i%2 == 0)
 	}
 
-	CreateMockThread(db, userId, "id_deleted", "name_deleted", true)
+	CreateMockThread(db, userId, "id_deleted", "name_deleted", true, false)
 
 	threads, err := GetThreads(db, userId)
 	assert.Nil(t, err)
@@ -65,7 +87,7 @@ func TestRenameThread(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
-	id := CreateMockThread(db, userId, "tid", "tname", false)
+	id := CreateMockThread(db, userId, "tid", "tname", false, false)
 
 	RenameThread(db, id, "new_name")
 
@@ -79,7 +101,7 @@ func TestDeleteThread(t *testing.T) {
 	db := setup()
 
 	userId := CreateMockUser(db, "alice@email.com", "", true)
-	id := CreateMockThread(db, userId, "tid", "tname", false)
+	id := CreateMockThread(db, userId, "tid", "tname", false, false)
 
 	DeleteThread(db, id)
 

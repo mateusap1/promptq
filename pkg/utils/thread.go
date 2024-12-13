@@ -34,6 +34,29 @@ func GetThreadFromId(db *sql.DB, id int64) (tid string, userId int64, name strin
 	return tid, userId, name, deleted, nil
 }
 
+func GetPendingThreads(db *sql.DB) (threads []Thread, err error) {
+	const query = "SELECT tid, tname FROM threads WHERE deleted=false AND pending=true ORDER BY updated_at DESC, created_at DESC;"
+	rows, err := db.Query(query)
+	if err != nil {
+		return []Thread{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			tid  string
+			name string
+		)
+		if err := rows.Scan(&tid, &name); err != nil {
+			return []Thread{}, err
+		}
+
+		threads = append(threads, Thread{tid, name})
+	}
+
+	return threads, nil
+}
+
 func GetThreads(db *sql.DB, userId int64) (threads []Thread, err error) {
 	const query = "SELECT tid, tname FROM threads WHERE user_id=$1 AND deleted=false ORDER BY updated_at DESC, created_at DESC;"
 	rows, err := db.Query(query, userId)
